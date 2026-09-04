@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Usuarios - Monitoreo de Cultivos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 fw-bold text-success mb-0"><i class="fa-solid fa-user-gear me-2"></i>Usuarios</h2>
+    <a href="{{ url_for('usuarios.nuevo') }}" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Nuevo Usuario</a>
+</div>
+
+<div class="table-responsive shadow-sm bg-white rounded">
+    <table class="table table-striped align-middle mb-0">
+        <thead class="table-dark text-nowrap">
+            <tr>
+                <th>Usuario</th>
+                <th>Email</th>
+                <th>Admin</th>
+                <th>Activo</th>
+                <th>Permisos</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td><strong>{{ u.usuario }}</strong></td>
+                <td>{{ u.email or '-' }}</td>
+                <td>
+                    {% if u.is_admin %}<span class="badge bg-primary">Admin</span>{% else %}-{% endif %}
+                </td>
+                <td>
+                    {% if u.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">Inactivo</span>{% endif %}
+                </td>
+                <td>
+                    {% if u.is_admin %}
+                        <span class="text-muted small">Todos (admin)</span>
+                    {% else %}
+                        {% set permisos = [] %}
+                        {% if u.puede_clientes %}{% set _ = permisos.append('Clientes') %}{% endif %}
+                        {% if u.puede_lotes %}{% set _ = permisos.append('Lotes') %}{% endif %}
+                        {% if u.puede_productos %}{% set _ = permisos.append('Productos') %}{% endif %}
+                        {% if u.puede_recetas %}{% set _ = permisos.append('Recetas') %}{% endif %}
+                        <span class="small">{{ permisos | join(', ') if permisos else 'Sin permisos' }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-nowrap">
+                    <a href="{{ url_for('usuarios.editar', id=u.id) }}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                    {% if u.id != current_user.id %}
+                    <form action="{{ url_for('usuarios.eliminar', id=u.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar el usuario {{ u.usuario }}?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No hay usuarios registrados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

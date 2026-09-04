@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Receta {{ receta.numero_receta }} - Monitoreo de Cultivos</title>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-bottom: 20px; }
+        .title { font-size: 20px; font-weight: bold; color: #28a745; }
+        .subtitle { font-size: 14px; color: #666; }
+        .section-title { font-size: 14px; font-weight: bold; color: #28a745; margin-top: 15px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .text-right { text-align: right; }
+        .footer { margin-top: 30px; font-size: 10px; text-align: center; color: #888; }
+        .no-print { text-align: center; margin-bottom: 15px; }
+    </style>
+    {% if auto_print %}
+    <script>window.onload = function() { window.print(); };</script>
+    {% endif %}
+</head>
+<body>
+
+<div class="header">
+    <div class="title">RECETA AGRONÓMICA N° {{ receta.numero_receta }}</div>
+    <div class="subtitle">Monitoreo de Cultivos</div>
+</div>
+
+<div class="section-title">DATOS DEL CLIENTE Y APLICACIÓN</div>
+<table>
+    <tr>
+        <td><strong>Cliente:</strong> {{ receta.cliente.razon_social }}</td>
+        <td><strong>Fecha:</strong> {{ receta.fecha.strftime('%Y-%m-%d') }}</td>
+    </tr>
+    <tr>
+        <td><strong>CUIT:</strong> {{ receta.cliente.cuit or '-' }}</td>
+        <td><strong>Lote:</strong> {{ receta.lote.nombre }}</td>
+    </tr>
+    <tr>
+        <td><strong>Domicilio:</strong> {{ receta.cliente.domicilio or '-' }}</td>
+        <td><strong>Superficie:</strong> {{ "%.2f"|format(receta.hectareas) }} Ha</td>
+    </tr>
+</table>
+
+<div class="section-title">PRODUCTOS RECOMENDADOS</div>
+<table>
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Principio Activo</th>
+            <th>Marca</th>
+            <th class="text-right">Dosis / Ha</th>
+            <th class="text-right">Total</th>
+            <th class="text-right">Precio Unit.</th>
+            <th class="text-right">Importe</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in receta.detalles %}
+        <tr>
+            <td>{{ d.producto.denominacion_comercial }}</td>
+            <td>{{ d.producto.principio_activo }}</td>
+            <td>{{ d.producto.marca }}</td>
+            <td class="text-right">{{ "%.2f"|format(d.dosis) }} {{ d.producto.unidad }}</td>
+            <td class="text-right"><strong>{{ "%.2f"|format(d.cantidad_total) }} {{ d.producto.unidad }}</strong></td>
+            <td class="text-right">$ {{ "%.2f"|format(d.precio_unitario) }}</td>
+            <td class="text-right"><strong>$ {{ "%.2f"|format(d.importe_total) }}</strong></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% if receta.detalles %}
+    <tfoot>
+        <tr>
+            <td colspan="6" class="text-right"><strong>Total General</strong></td>
+            <td class="text-right"><strong>$ {{ "%.2f"|format(receta.detalles | sum(attribute='importe_total')) }}</strong></td>
+        </tr>
+    </tfoot>
+    {% endif %}
+</table>
+
+{% if receta.observaciones %}
+<div class="section-title">OBSERVACIONES</div>
+<p>{{ receta.observaciones }}</p>
+{% endif %}
+
+<div class="footer">
+    Documento generado automáticamente por el Sistema de Monitoreo de Cultivos.
+</div>
+
+</body>
+</html>

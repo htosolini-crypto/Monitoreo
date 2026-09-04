@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Monitoreo de Cultivos{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-light">
+{% if current_user.is_authenticated %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="{{ url_for('dashboard') }}">
+            <i class="fa-solid fa-seedling me-2"></i>Monitoreo de Cultivos
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                {% if current_user.is_admin or current_user.puede_clientes %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('clientes.listar') }}"><i class="fa-solid fa-users me-1"></i> Clientes</a></li>
+                {% endif %}
+                {% if current_user.is_admin or current_user.puede_lotes %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('lotes.listar') }}"><i class="fa-solid fa-map-location-dot me-1"></i> Lotes</a></li>
+                {% endif %}
+                {% if current_user.is_admin or current_user.puede_productos %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('productos.listar') }}"><i class="fa-solid fa-boxes-stacked me-1"></i> Productos</a></li>
+                {% endif %}
+                {% if current_user.is_admin or current_user.puede_recetas %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('recetas.listar') }}"><i class="fa-solid fa-file-prescription me-1"></i> Recetas</a></li>
+                {% endif %}
+                {% if current_user.is_admin %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('usuarios.listar') }}"><i class="fa-solid fa-user-gear me-1"></i> Usuarios</a></li>
+                {% endif %}
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-right-from-bracket me-1"></i> Cerrar Sesión ({{ current_user.usuario }})</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endif %}
+
+<div class="container-fluid p-3 p-md-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

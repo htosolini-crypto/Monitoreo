@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_form_helpers.html" import render_field %}
+{% block title %}{{ titulo }} - Monitoreo de Cultivos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 fw-bold text-success mb-0">{{ titulo }}</h2>
+    <a href="{{ url_for('clientes.listar') }}" class="btn btn-outline-secondary">Cancelar</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                {{ render_field(form.cuit, 'col-md-3') }}
+                {{ render_field(form.razon_social, 'col-md-5') }}
+                {{ render_field(form.id_coniva, 'col-md-4') }}
+                {{ render_field(form.domicilio, 'col-md-4') }}
+                {{ render_field(form.numero, 'col-md-2') }}
+                {{ render_field(form.codigo_postal, 'col-md-2') }}
+                {{ render_field(form.localidad, 'col-md-4') }}
+                {{ render_field(form.telefono, 'col-md-4') }}
+                {{ render_field(form.email, 'col-md-4') }}
+                {{ render_field(form.latitud, 'col-md-4') }}
+                {{ render_field(form.longitud, 'col-md-4') }}
+            </div>
+            <button type="submit" class="btn btn-success px-4"><i class="fa-solid fa-floppy-disk me-1"></i> Guardar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

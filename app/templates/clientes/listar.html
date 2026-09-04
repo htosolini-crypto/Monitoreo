@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Clientes - Monitoreo de Cultivos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 fw-bold text-success mb-0"><i class="fa-solid fa-users me-2"></i>Clientes</h2>
+    <a href="{{ url_for('clientes.nuevo') }}" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Nuevo Cliente</a>
+</div>
+
+<div class="table-responsive shadow-sm bg-white rounded">
+    <table class="table table-striped align-middle mb-0">
+        <thead class="table-dark text-nowrap">
+            <tr>
+                <th>ID</th>
+                <th>CUIT</th>
+                <th>Razón Social</th>
+                <th>Localidad</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Condición IVA</th>
+                <th>Mapa</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in clientes %}
+            <tr>
+                <td><strong>{{ c.id }}</strong></td>
+                <td>{{ c.cuit or '-' }}</td>
+                <td>{{ c.razon_social }}</td>
+                <td>{{ c.localidad or '-' }}</td>
+                <td>{{ c.telefono or '-' }}</td>
+                <td>{{ c.email or '-' }}</td>
+                <td>{{ c.id_coniva or '-' }}</td>
+                <td class="text-center">
+                    {% if c.latitud and c.longitud %}
+                        <a href="https://www.google.com/maps?q={{ c.latitud }},{{ c.longitud }}" target="_blank" class="btn btn-sm btn-outline-success border-0 p-1" title="Ver en Google Maps">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                <path fill="#EA4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                                <circle fill="#A50E0E" cx="12" cy="9" r="2.5"/>
+                            </svg>
+                        </a>
+                    {% else %}
+                        <span class="text-muted" title="Sin coordenadas">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                <path fill="#9E9E9E" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                                <circle fill="#616161" cx="12" cy="9" r="2.5"/>
+                            </svg>
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="text-nowrap">
+                    <a href="{{ url_for('clientes.editar', id=c.id) }}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                    <form action="{{ url_for('clientes.eliminar', id=c.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este cliente?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9" class="text-center text-muted py-4">No hay clientes registrados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

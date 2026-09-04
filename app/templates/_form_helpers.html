@@ -1,0 +1,15 @@
+{% macro render_field(field, col='col-md-6') %}
+<div class="{{ col }} mb-3">
+    {{ field.label(class_='form-label fw-bold') }}
+    {% if field.type == 'BooleanField' %}
+        <div class="form-check">
+            {{ field(class_='form-check-input') }}
+        </div>
+    {% else %}
+        {{ field(class_=('form-select' if field.type in ['SelectField', 'SelectMultipleField'] else 'form-control') + (' is-invalid' if field.errors else '')) }}
+    {% endif %}
+    {% for error in field.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+    {% endfor %}
+</div>
+{% endmacro %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Lotes - Monitoreo de Cultivos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 fw-bold text-success mb-0"><i class="fa-solid fa-map-location-dot me-2"></i>Lotes</h2>
+    <a href="{{ url_for('lotes.nuevo') }}" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Nuevo Lote</a>
+</div>
+
+<div class="card mb-3 bg-light border-0">
+    <div class="card-body">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-bold mb-1">Filtrar por Cliente</label>
+                <select name="cliente_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todos los clientes...</option>
+                    {% for c in clientes %}
+                        <option value="{{ c.id }}" {% if cliente_filtro == c.id %}selected{% endif %}>{{ c.razon_social }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if cliente_filtro %}
+                <div class="col-md-2">
+                    <a href="{{ url_for('lotes.listar') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-xmark me-1"></i> Limpiar</a>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive shadow-sm bg-white rounded">
+    <table class="table table-striped align-middle mb-0">
+        <thead class="table-dark text-nowrap">
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Nombre del Lote</th>
+                <th>Cultivo</th>
+                <th class="text-end">Superficie (ha)</th>
+                <th>Estado</th>
+                <th>Mapa</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in lotes %}
+            <tr>
+                <td><strong>{{ l.id }}</strong></td>
+                <td>{{ l.cliente.razon_social }}</td>
+                <td>{{ l.nombre }}</td>
+                <td>{{ l.cultivo or '-' }}</td>
+                <td class="text-end">{{ "%.2f"|format(l.superficie_ha) }}</td>
+                <td>
+                    {% if l.activo %}
+                        <span class="badge bg-success">Activo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if l.latitud and l.longitud %}
+                        <a href="https://www.google.com/maps?q={{ l.latitud }},{{ l.longitud }}" target="_blank" class="btn btn-sm btn-outline-success border-0 p-1" title="Ver en Google Maps">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                <path fill="#EA4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                                <circle fill="#A50E0E" cx="12" cy="9" r="2.5"/>
+                            </svg>
+                        </a>
+                    {% else %}
+                        <span class="text-muted" title="Sin coordenadas">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                <path fill="#9E9E9E" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                                <circle fill="#616161" cx="12" cy="9" r="2.5"/>
+                            </svg>
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="text-nowrap">
+                    <a href="{{ url_for('lotes.editar', id=l.id) }}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                    <form action="{{ url_for('lotes.eliminar', id=l.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este lote?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="text-center text-muted py-4">No hay lotes registrados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

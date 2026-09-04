@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Recetas - Monitoreo de Cultivos{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h2 class="h3 fw-bold text-success mb-0"><i class="fa-solid fa-file-prescription me-2"></i>Recetas Agronómicas</h2>
+    <a href="{{ url_for('recetas.nueva') }}" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Nueva Receta</a>
+</div>
+
+<div class="card mb-4 bg-light border-0">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('recetas.listar') }}" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label text-secondary small fw-bold mb-1">Búsqueda en Lote / Producto</label>
+                <input type="text" class="form-control" name="q" value="{{ q }}" placeholder="Lote o producto...">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-secondary small fw-bold mb-1">Cliente</label>
+                <select class="form-select" name="cliente_id">
+                    <option value="">Todos los clientes...</option>
+                    {% for c in lista_clientes %}
+                        <option value="{{ c.id }}" {% if cliente_filtro == c.id|string %}selected{% endif %}>{{ c.razon_social }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-secondary small fw-bold mb-1">Principio Activo</label>
+                <select class="form-select" name="principio_activo">
+                    <option value="">Todos los principios...</option>
+                    {% for p in lista_principios %}
+                        <option value="{{ p }}" {% if principio_activo_filtro == p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-secondary small fw-bold mb-1">Fechas (Desde - Hasta)</label>
+                <div class="input-group">
+                    <input type="date" class="form-control form-control-sm" name="fecha_desde" value="{{ fecha_desde }}">
+                    <span class="input-group-text px-1">a</span>
+                    <input type="date" class="form-control form-control-sm" name="fecha_hasta" value="{{ fecha_hasta }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-bold mb-1">N° Receta (Desde - Hasta)</label>
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-sm" name="receta_desde" value="{{ receta_desde }}" placeholder="Ej: 2026-0001">
+                    <span class="input-group-text px-1">a</span>
+                    <input type="text" class="form-control form-control-sm" name="receta_hasta" value="{{ receta_hasta }}" placeholder="Ej: 2026-0050">
+                </div>
+            </div>
+            <div class="col-md-8 d-flex align-items-end justify-content-end gap-2">
+                <button type="submit" class="btn btn-primary px-3"><i class="fa-solid fa-filter me-1"></i> Filtrar</button>
+                <a href="{{ url_for('recetas.exportar_excel', q=q, cliente_id=cliente_filtro, principio_activo=principio_activo_filtro, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta, receta_desde=receta_desde, receta_hasta=receta_hasta) }}" class="btn btn-outline-success px-3">
+                    <i class="fa-solid fa-file-excel me-1"></i> Excel
+                </a>
+                {% if q or fecha_desde or fecha_hasta or cliente_filtro or principio_activo_filtro or receta_desde or receta_hasta %}
+                    <a href="{{ url_for('recetas.listar') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-xmark me-1"></i> Limpiar</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive shadow-sm bg-white rounded">
+    <table class="table table-hover align-middle border mb-0">
+        <thead class="table-dark">
+            <tr>
+                <th>N° Receta</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Lote</th>
+                <th class="text-end">Superficie (Ha)</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in recetas %}
+            <tr>
+                <td class="fw-bold">{{ r.numero_receta }}</td>
+                <td>{{ r.fecha.strftime('%Y-%m-%d') if r.fecha else '-' }}</td>
+                <td>{{ r.cliente.razon_social }}</td>
+                <td>{{ r.lote.nombre }}</td>
+                <td class="text-end">{{ "%.2f"|format(r.hectareas) }}</td>
+                <td class="text-center">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('recetas.ver', id=r.id) }}" class="btn btn-sm btn-info text-white"><i class="fa-solid fa-eye"></i></a>
+                        <a href="{{ url_for('recetas.editar', id=r.id) }}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                        <form action="{{ url_for('recetas.eliminar', id=r.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar la receta {{ r.numero_receta }}?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    {% if q or fecha_desde or fecha_hasta or cliente_filtro or principio_activo_filtro or receta_desde or receta_hasta %}
+                        No se encontraron recetas con los criterios de búsqueda ingresados.
+                    {% else %}
+                        No hay recetas registradas actualmente.
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Recuperar acceso - Monitoreo de Cultivos{% endblock %}
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white text-center py-3">
+                <h4 class="mb-0"><i class="fa-solid fa-key me-2"></i>Recuperar acceso</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted small">
+                    Ingresá el email con el que estás registrado. Te vamos a enviar tu usuario
+                    y un enlace para elegir una nueva contraseña.
+                </p>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.email.label(class_='form-label') }}
+                        {{ form.email(class_='form-control', placeholder='tu_email@ejemplo.com', autofocus=true) }}
+                    </div>
+                    {{ form.submit(class_='btn btn-success w-100 mt-2') }}
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('auth.login') }}" class="small"><i class="fa-solid fa-arrow-left me-1"></i>Volver al login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

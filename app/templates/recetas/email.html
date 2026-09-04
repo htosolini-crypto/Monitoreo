@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Receta Agrícola N° {{ receta.numero_receta }}</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333333; }
+        .container { max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #e0e0e0; }
+        .header { background-color: #198754; color: #ffffff; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 22px; }
+        .header p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
+        .content { padding: 25px; }
+        .info-grid { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
+        .info-grid td { padding: 6px 0; vertical-align: top; font-size: 14px; }
+        .info-label { font-weight: bold; color: #555555; width: 35%; }
+        .table-products { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; }
+        .table-products th { background-color: #f1f3f5; color: #495057; text-align: left; padding: 10px; font-size: 13px; border-bottom: 2px solid #dee2e6; }
+        .table-products td { padding: 10px; border-bottom: 1px solid #e9ecef; font-size: 13px; }
+        .notes-box { background-color: #f8f9fa; border-left: 4px solid #198754; padding: 12px 15px; margin-top: 15px; font-size: 13px; color: #555555; }
+        .footer { background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #6c757d; border-top: 1px solid #e9ecef; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Monitoreo de Cultivos</h2>
+        <p>Receta de Aplicación N° {{ receta.numero_receta }}</p>
+    </div>
+    <div class="content">
+        <p>Estimado/a <strong>{{ receta.cliente.razon_social }}</strong>,</p>
+        <p>Le adjuntamos los detalles correspondientes a la orden de aplicación generada:</p>
+
+        <table class="info-grid">
+            <tr><td class="info-label">Fecha:</td><td>{{ receta.fecha.strftime('%Y-%m-%d') }}</td></tr>
+            <tr><td class="info-label">CUIT:</td><td>{{ receta.cliente.cuit or 'N/A' }}</td></tr>
+            <tr><td class="info-label">Lote:</td><td>{{ receta.lote.nombre }}</td></tr>
+            <tr><td class="info-label">Superficie:</td><td><strong>{{ "%.2f"|format(receta.hectareas) }} ha</strong></td></tr>
+        </table>
+
+        <h3 style="font-size: 16px; color: #198754; border-bottom: 1px solid #198754; padding-bottom: 5px;">Detalle de Productos</h3>
+
+        <table class="table-products">
+            <thead>
+                <tr><th>Producto</th><th>Principio Activo</th><th>Dosis / ha</th><th>Cantidad Total</th><th>Precio Unit.</th><th>Importe</th></tr>
+            </thead>
+            <tbody>
+                {% for d in receta.detalles %}
+                <tr>
+                    <td><strong>{{ d.producto.denominacion_comercial }}</strong> ({{ d.producto.marca }})</td>
+                    <td>{{ d.producto.principio_activo }}</td>
+                    <td>{{ "%.2f"|format(d.dosis) }} {{ d.producto.unidad }}/ha</td>
+                    <td><strong>{{ "%.2f"|format(d.cantidad_total) }} {{ d.producto.unidad }}</strong></td>
+                    <td>$ {{ "%.2f"|format(d.precio_unitario) }}</td>
+                    <td><strong>$ {{ "%.2f"|format(d.importe_total) }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if receta.detalles %}
+            <tfoot>
+                <tr>
+                    <td colspan="5" style="text-align: right;"><strong>Total General</strong></td>
+                    <td><strong>$ {{ "%.2f"|format(receta.detalles | sum(attribute='importe_total')) }}</strong></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+
+        {% if receta.observaciones %}
+        <div class="notes-box"><strong>Observaciones:</strong><br>{{ receta.observaciones }}</div>
+        {% endif %}
+    </div>
+    <div class="footer">
+        Este es un correo automático generado por el sistema de Monitoreo de Cultivos.<br>
+        Por favor, no responda directamente a este e-mail.
+    </div>
+</div>
+</body>
+</html>

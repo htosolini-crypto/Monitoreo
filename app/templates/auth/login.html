@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Ingreso - Monitoreo de Cultivos{% endblock %}
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white text-center py-3">
+                <h4 class="mb-0"><i class="fa-solid fa-seedling me-2"></i>Monitoreo de Cultivos</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" autocomplete="on">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.usuario.label(class_='form-label') }}
+                        {{ form.usuario(class_='form-control', placeholder='Usuario', autofocus=true, autocomplete='username') }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.password.label(class_='form-label') }}
+                        <div class="input-group">
+                            {{ form.password(class_='form-control', placeholder='••••••••', autocomplete='current-password', id='password') }}
+                            <button type="button" class="btn btn-outline-secondary" id="btnTogglePassword" tabindex="-1" title="Mostrar/ocultar contraseña">
+                                <i class="fa-solid fa-eye" id="iconoTogglePassword"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ form.remember(class_='form-check-input') }}
+                        {{ form.remember.label(class_='form-check-label') }}
+                    </div>
+                    {{ form.submit(class_='btn btn-success w-100 mt-2') }}
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('auth.recuperar') }}" class="small">¿Olvidaste tu usuario o contraseña?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('btnTogglePassword').addEventListener('click', function () {
+        const input = document.getElementById('password');
+        const icono = document.getElementById('iconoTogglePassword');
+        const oculto = input.type === 'password';
+        input.type = oculto ? 'text' : 'password';
+        icono.classList.toggle('fa-eye', !oculto);
+        icono.classList.toggle('fa-eye-slash', oculto);
+    });
+</script>
+{% endblock %}
