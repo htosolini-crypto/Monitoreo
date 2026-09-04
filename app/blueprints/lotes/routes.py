@@ -4,9 +4,10 @@ from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
 from app.blueprints.lotes import bp
-from app.blueprints.lotes.forms import LoteForm
+from app.blueprints.lotes.forms import LoteForm, IdentificarPlantaForm
 from app.decorators import tiene_permiso_modulo
 from app.models import Lote, Cliente
+from app.services.plantnet import identificar_planta, IdentificacionError
 
 
 @bp.before_request
@@ -79,6 +80,24 @@ def eliminar(id):
         db.session.rollback()
         flash('No se puede eliminar: el lote tiene recetas asociadas.', 'danger')
     return redirect(url_for('lotes.listar'))
+
+
+@bp.route('/<int:id>/identificar', methods=['GET', 'POST'])
+@login_required
+def identificar(id):
+    lote = Lote.query.get_or_404(id)
+    form = IdentificarPlantaForm()
+    resultado = None
+
+    if form.validate_on_submit():
+        try:
+            resultado = identificar_planta(form.imagen.data, form.organo.data)
+            if not resultado['resultados']:
+                flash('No se pudo identificar ninguna especie en la imagen.', 'warning')
+        except IdentificacionError as exc:
+            flash(str(exc), 'danger')
+
+    return render_template('lotes/identificar.html', form=form, lote=lote, resultado=resultado)
 
 
 @bp.route('/por_cliente/<int:cliente_id>')

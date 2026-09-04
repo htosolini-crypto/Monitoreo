@@ -29,3 +29,5 @@ class Config:
     WEATHER_LAT = float(os.environ.get('WEATHER_LAT', '-30.3614'))
     WEATHER_LON = float(os.environ.get('WEATHER_LON', '-61.9156'))
     WEATHER_LABEL = os.environ.get('WEATHER_LABEL', 'San Guillermo, Santa Fe')
+
+    PLANTNET_API_KEY = os.environ.get('PLANTNET_API_KEY')
