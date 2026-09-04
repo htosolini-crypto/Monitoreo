@@ -45,7 +45,7 @@ def recuperar():
                     'auth/email_recuperacion.html', usuario=usuario, enlace=enlace
                 )
                 msg = Message(
-                    subject='Recuperación de acceso - Monitoreo de Cultivos',
+                    subject='Recuperación de acceso - Sistema de Gestión y Monitoreo Agronómico',
                     recipients=[usuario.email],
                     html=html_content,
                 )

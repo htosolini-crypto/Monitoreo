@@ -21,7 +21,7 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = (
-        os.environ.get('MAIL_DEFAULT_SENDER_NAME', 'Monitoreo de Cultivos'),
+        os.environ.get('MAIL_DEFAULT_SENDER_NAME', 'Sistema de Gestión y Monitoreo Agronómico'),
         os.environ.get('MAIL_DEFAULT_SENDER_EMAIL', os.environ.get('MAIL_USERNAME')),
     )
     MAIL_ASCII_ATTACHMENTS = False
