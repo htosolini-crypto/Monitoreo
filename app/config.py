@@ -31,3 +31,4 @@ class Config:
     WEATHER_LABEL = os.environ.get('WEATHER_LABEL', 'San Guillermo, Santa Fe')
 
     PLANTNET_API_KEY = os.environ.get('PLANTNET_API_KEY')
+    AGROMONITORING_API_KEY = os.environ.get('AGROMONITORING_API_KEY')

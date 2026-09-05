@@ -1,4 +1,6 @@
-from flask import render_template, redirect, url_for, flash, request
+import json
+
+from flask import render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
 
@@ -8,6 +10,7 @@ from app.blueprints.lotes.forms import LoteForm, IdentificarPlantaForm
 from app.decorators import tiene_permiso_modulo
 from app.models import Lote, Cliente
 from app.services.plantnet import identificar_planta, IdentificacionError
+from app.services.agromonitoring import guardar_poligono, obtener_ndvi, AgromonitoringError
 
 
 @bp.before_request
@@ -98,6 +101,63 @@ def identificar(id):
             flash(str(exc), 'danger')
 
     return render_template('lotes/identificar.html', form=form, lote=lote, resultado=resultado)
+
+
+@bp.route('/<int:id>/ndvi', methods=['GET', 'POST'])
+@login_required
+def ndvi(id):
+    lote = Lote.query.get_or_404(id)
+
+    if request.method == 'POST':
+        coords_raw = request.form.get('coordenadas')
+        if not coords_raw:
+            flash('Dibujá el contorno del lote en el mapa antes de guardar.', 'danger')
+        else:
+            try:
+                coordenadas = json.loads(coords_raw)
+                guardar_poligono(lote, coordenadas)
+                db.session.commit()
+                flash('Polígono guardado correctamente.', 'success')
+            except AgromonitoringError as exc:
+                flash(str(exc), 'danger')
+            except (ValueError, TypeError):
+                flash('El contorno dibujado no es válido.', 'danger')
+        return redirect(url_for('lotes.ndvi', id=id))
+
+    centro = None
+    if lote.latitud and lote.longitud:
+        try:
+            centro = [float(lote.latitud), float(lote.longitud)]
+        except ValueError:
+            centro = None
+    if not centro:
+        centro = [current_app.config['WEATHER_LAT'], current_app.config['WEATHER_LON']]
+
+    poligono = json.loads(lote.poligono) if lote.poligono else None
+
+    return render_template('lotes/ndvi.html', lote=lote, centro=centro, poligono=poligono, resultado=None)
+
+
+@bp.route('/<int:id>/ndvi/consultar', methods=['POST'])
+@login_required
+def ndvi_consultar(id):
+    lote = Lote.query.get_or_404(id)
+    resultado = None
+
+    if not lote.agromonitoring_id:
+        flash('Primero guardá el polígono del lote.', 'warning')
+        return redirect(url_for('lotes.ndvi', id=id))
+
+    try:
+        resultado = obtener_ndvi(lote.agromonitoring_id)
+    except AgromonitoringError as exc:
+        flash(str(exc), 'warning')
+
+    centro = [float(lote.latitud), float(lote.longitud)] if lote.latitud and lote.longitud else \
+        [current_app.config['WEATHER_LAT'], current_app.config['WEATHER_LON']]
+    poligono = json.loads(lote.poligono) if lote.poligono else None
+
+    return render_template('lotes/ndvi.html', lote=lote, centro=centro, poligono=poligono, resultado=resultado)
 
 
 @bp.route('/por_cliente/<int:cliente_id>')

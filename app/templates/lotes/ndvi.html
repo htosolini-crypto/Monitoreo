@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}NDVI - {{ lote.nombre }}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+<style>#mapa { height: 450px; border-radius: 0.375rem; }</style>
+{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 fw-bold text-success mb-0"><i class="fa-solid fa-satellite me-2"></i>NDVI — {{ lote.nombre }}</h2>
+    <a href="{{ url_for('lotes.listar') }}" class="btn btn-outline-secondary">Volver</a>
+</div>
+
+<div class="row">
+    <div class="col-md-7 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <p class="text-muted small">Dibujá el contorno del lote con la herramienta de polígono (ícono de la izquierda del mapa) y guardalo.</p>
+                <div id="mapa"></div>
+                <form method="POST" action="{{ url_for('lotes.ndvi', id=lote.id) }}" class="mt-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="coordenadas" id="coordenadas">
+                    <button type="submit" class="btn btn-success" id="btnGuardarPoligono" disabled>
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Guardar polígono
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white"><strong>Índice NDVI</strong></div>
+            <div class="card-body">
+                {% if not lote.agromonitoring_id %}
+                <p class="text-muted mb-0">Todavía no guardaste el polígono de este lote. Dibujalo en el mapa y guardalo para poder consultar el NDVI.</p>
+                {% else %}
+                <form method="POST" action="{{ url_for('lotes.ndvi_consultar', id=lote.id) }}" class="mb-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-success">
+                        <i class="fa-solid fa-magnifying-glass me-1"></i> Consultar NDVI
+                    </button>
+                </form>
+
+                {% if resultado %}
+                <div class="border-top pt-3">
+                    <div class="text-muted small mb-1">Imagen del {{ resultado.fecha.strftime('%Y-%m-%d') }}</div>
+                    <div class="d-flex align-items-baseline gap-2 mb-2">
+                        <span class="fs-3 fw-bold">{{ "%.2f"|format(resultado.mean) }}</span>
+                        {% if resultado.mean < 0.2 %}
+                            <span class="badge bg-danger">Suelo desnudo / vegetación escasa</span>
+                        {% elif resultado.mean < 0.5 %}
+                            <span class="badge bg-warning text-dark">Vegetación moderada</span>
+                        {% else %}
+                            <span class="badge bg-success">Vegetación densa</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-muted small mb-3">Mín: {{ "%.2f"|format(resultado.min) }} — Máx: {{ "%.2f"|format(resultado.max) }}</div>
+                    {% if resultado.imagen_url %}
+                    <img src="{{ resultado.imagen_url }}" class="img-fluid rounded border" alt="Imagen NDVI">
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script>
+    const centro = {{ centro | tojson }};
+    const poligonoExistente = {{ poligono | tojson }};
+
+    const mapa = L.map('mapa').setView(centro, 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 19,
+    }).addTo(mapa);
+
+    const dibujados = new L.FeatureGroup();
+    mapa.addLayer(dibujados);
+
+    if (poligonoExistente) {
+        const latlngs = poligonoExistente.map(([lng, lat]) => [lat, lng]);
+        const capa = L.polygon(latlngs);
+        dibujados.addLayer(capa);
+        mapa.fitBounds(capa.getBounds());
+        document.getElementById('btnGuardarPoligono').disabled = false;
+    }
+
+    const controlDibujo = new L.Control.Draw({
+        draw: {
+            polygon: { allowIntersection: false, showArea: true },
+            polyline: false, rectangle: false, circle: false, marker: false, circlemarker: false,
+        },
+        edit: { featureGroup: dibujados },
+    });
+    mapa.addControl(controlDibujo);
+
+    function actualizarCoordenadas() {
+        const capas = dibujados.getLayers();
+        const boton = document.getElementById('btnGuardarPoligono');
+        if (!capas.length) {
+            boton.disabled = true;
+            return;
+        }
+        const geojson = capas[0].toGeoJSON();
+        document.getElementById('coordenadas').value = JSON.stringify(geojson.geometry.coordinates[0]);
+        boton.disabled = false;
+    }
+
+    mapa.on(L.Draw.Event.CREATED, function (e) {
+        dibujados.clearLayers(); // un solo polígono por lote
+        dibujados.addLayer(e.layer);
+        actualizarCoordenadas();
+    });
+    mapa.on(L.Draw.Event.EDITED, actualizarCoordenadas);
+    mapa.on(L.Draw.Event.DELETED, actualizarCoordenadas);
+</script>
+{% endblock %}

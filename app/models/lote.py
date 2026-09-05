@@ -15,5 +15,7 @@ class Lote(db.Model):
     longitud = db.Column(db.String(50))
     activo = db.Column(db.Boolean, nullable=False, default=True)
     fecha_alta = db.Column(db.DateTime, default=datetime.utcnow)
+    poligono = db.Column(db.Text, nullable=True)
+    agromonitoring_id = db.Column(db.String(50), nullable=True)
 
     recetas = db.relationship('Receta', backref='lote')
