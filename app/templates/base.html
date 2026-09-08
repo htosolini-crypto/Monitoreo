@@ -37,6 +37,7 @@
                 {% endif %}
                 {% if current_user.is_admin or current_user.puede_recetas %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('recetas.listar') }}"><i class="fa-solid fa-file-prescription me-1"></i> Recetas</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('estadisticas.index') }}"><i class="fa-solid fa-chart-column me-1"></i> Estadísticas</a></li>
                 {% endif %}
                 {% if current_user.is_admin %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('usuarios.listar') }}"><i class="fa-solid fa-user-gear me-1"></i> Usuarios</a></li>
