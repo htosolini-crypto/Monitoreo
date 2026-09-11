@@ -6,7 +6,7 @@ from app.extensions import db
 from app.blueprints.productos import bp
 from app.blueprints.productos.forms import ProductoForm
 from app.decorators import tiene_permiso_modulo
-from app.models import Producto, Parametro
+from app.models import Producto, Parametro, PrincipioActivo
 
 
 @bp.before_request
@@ -21,6 +21,9 @@ def _verificar_permiso():
 def _cargar_choices(form):
     form.unidad.choices = Parametro.opciones('unidad_producto')
     form.id_insumo.choices = Parametro.opciones('tipo_insumo')
+    form.principio_activo_id.choices = [
+        (p.id, p.nombre) for p in PrincipioActivo.query.order_by(PrincipioActivo.nombre.asc()).all()
+    ]
 
 
 @bp.route('/')

@@ -28,6 +28,7 @@ def create_app(config_class=Config):
     from app.blueprints.auth import bp as auth_bp
     from app.blueprints.clientes import bp as clientes_bp
     from app.blueprints.productos import bp as productos_bp
+    from app.blueprints.principios_activos import bp as principios_activos_bp
     from app.blueprints.lotes import bp as lotes_bp
     from app.blueprints.recetas import bp as recetas_bp
     from app.blueprints.usuarios import bp as usuarios_bp
@@ -36,6 +37,7 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp)
     app.register_blueprint(clientes_bp)
     app.register_blueprint(productos_bp)
+    app.register_blueprint(principios_activos_bp)
     app.register_blueprint(lotes_bp)
     app.register_blueprint(recetas_bp)
     app.register_blueprint(usuarios_bp)

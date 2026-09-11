@@ -1,7 +1,7 @@
 from sqlalchemy import func
 
 from app.extensions import db
-from app.models import Receta, RecetaDetalle, Producto, Cliente
+from app.models import Receta, RecetaDetalle, Producto, Cliente, PrincipioActivo
 
 
 def _leer_filtros(args):
@@ -111,19 +111,20 @@ def obtener_estadisticas(args):
     filas = (
         _filtrar_recetas(
             db.session.query(
-                Producto.principio_activo,
+                PrincipioActivo.nombre,
                 func.count(RecetaDetalle.id).label('veces'),
             )
-            .join(RecetaDetalle, RecetaDetalle.producto_id == Producto.id)
+            .join(Producto, RecetaDetalle.producto_id == Producto.id)
+            .join(PrincipioActivo, Producto.principio_activo_id == PrincipioActivo.id)
             .join(Receta, RecetaDetalle.receta_id == Receta.id),
             filtros,
         )
-        .group_by(Producto.principio_activo)
+        .group_by(PrincipioActivo.id, PrincipioActivo.nombre)
         .order_by(func.count(RecetaDetalle.id).desc())
         .limit(10)
         .all()
     )
-    top_principios = [{'nombre': f.principio_activo, 'veces': f.veces} for f in filas]
+    top_principios = [{'nombre': f.nombre, 'veces': f.veces} for f in filas]
 
     # --- Top clientes por hectáreas (sobre Receta+Cliente, sin join a detalle) ---
     filas = (

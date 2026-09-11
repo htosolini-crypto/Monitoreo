@@ -16,7 +16,7 @@ from app.blueprints.recetas import bp
 from app.blueprints.recetas.forms import RecetaForm
 from app.blueprints.recetas.services import obtener_recetas_filtradas
 from app.decorators import tiene_permiso_modulo
-from app.models import Receta, RecetaDetalle, Cliente, Lote, Producto
+from app.models import Receta, RecetaDetalle, Cliente, Lote, Producto, PrincipioActivo
 from flask_mail import Message
 
 
@@ -59,14 +59,7 @@ def _construir_detalle(receta_id, producto_id, dosis_val, hectareas):
 @login_required
 def listar():
     lista_clientes = Cliente.query.order_by(Cliente.razon_social.asc()).all()
-    lista_principios = (
-        db.session.query(Producto.principio_activo)
-        .filter(Producto.principio_activo.isnot(None), Producto.principio_activo != '')
-        .distinct()
-        .order_by(Producto.principio_activo.asc())
-        .all()
-    )
-    lista_principios = [p[0] for p in lista_principios]
+    lista_principios = [p.nombre for p in PrincipioActivo.query.order_by(PrincipioActivo.nombre.asc()).all()]
 
     recetas, filtros = obtener_recetas_filtradas(request.args)
 
@@ -95,7 +88,7 @@ def exportar_excel():
                     'Lote': r.lote.nombre,
                     'Hectáreas': r.hectareas,
                     'Producto': d.producto.denominacion_comercial,
-                    'Principio Activo': d.producto.principio_activo,
+                    'Principio Activo': d.producto.principio_activo.nombre,
                     'Marca': d.producto.marca,
                     'Dosis': d.dosis,
                     'Unidad': d.producto.unidad,

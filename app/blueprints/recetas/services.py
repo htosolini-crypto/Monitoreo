@@ -1,6 +1,6 @@
 from sqlalchemy import or_, func, cast, Integer
 
-from app.models import Receta, Cliente, Lote, RecetaDetalle, Producto
+from app.models import Receta, Cliente, Lote, RecetaDetalle, Producto, PrincipioActivo
 
 
 def obtener_recetas_filtradas(args):
@@ -18,6 +18,7 @@ def obtener_recetas_filtradas(args):
         .join(Lote, Receta.lote_id == Lote.id)
         .outerjoin(RecetaDetalle, RecetaDetalle.receta_id == Receta.id)
         .outerjoin(Producto, RecetaDetalle.producto_id == Producto.id)
+        .outerjoin(PrincipioActivo, Producto.principio_activo_id == PrincipioActivo.id)
     )
 
     if q:
@@ -34,7 +35,7 @@ def obtener_recetas_filtradas(args):
         query = query.filter(Receta.cliente_id == cliente_filtro)
 
     if principio_activo_filtro:
-        query = query.filter(Producto.principio_activo == principio_activo_filtro)
+        query = query.filter(PrincipioActivo.nombre == principio_activo_filtro)
 
     if receta_desde:
         query = query.filter(

@@ -41,7 +41,7 @@
 
         <table class="table-products">
             <thead>
-                <tr><th>Producto</th><th>Principio Activo</th><th>Dosis / ha</th><th>Cantidad Total</th><th>Precio Unit.</th><th>Importe</th></tr>
+                <tr><th>Producto</th><th>Principio Activo</th><th>Dosis / ha</th><th>Cantidad Total</th></tr>
             </thead>
             <tbody>
                 {% for d in receta.detalles %}
@@ -50,19 +50,9 @@
                     <td>{{ d.producto.principio_activo }}</td>
                     <td>{{ "%.2f"|format(d.dosis) }} {{ d.producto.unidad }}/ha</td>
                     <td><strong>{{ "%.2f"|format(d.cantidad_total) }} {{ d.producto.unidad }}</strong></td>
-                    <td>$ {{ "%.2f"|format(d.precio_unitario) }}</td>
-                    <td><strong>$ {{ "%.2f"|format(d.importe_total) }}</strong></td>
                 </tr>
                 {% endfor %}
             </tbody>
-            {% if receta.detalles %}
-            <tfoot>
-                <tr>
-                    <td colspan="5" style="text-align: right;"><strong>Total General</strong></td>
-                    <td><strong>$ {{ "%.2f"|format(receta.detalles | sum(attribute='importe_total')) }}</strong></td>
-                </tr>
-            </tfoot>
-            {% endif %}
         </table>
 
         {% if receta.observaciones %}
