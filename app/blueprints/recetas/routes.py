@@ -16,7 +16,7 @@ from app.blueprints.recetas import bp
 from app.blueprints.recetas.forms import RecetaForm
 from app.blueprints.recetas.services import obtener_recetas_filtradas
 from app.decorators import tiene_permiso_modulo
-from app.models import Receta, RecetaDetalle, Cliente, Lote, Producto, PrincipioActivo
+from app.models import Receta, RecetaDetalle, Cliente, Lote, Campania, Producto, PrincipioActivo
 from flask_mail import Message
 
 
@@ -29,7 +29,7 @@ def _verificar_permiso():
         return redirect(url_for('dashboard'))
 
 
-def _cargar_choices(form, cliente_id=None):
+def _cargar_choices(form, cliente_id=None, lote_id=None):
     clientes = Cliente.query.order_by(Cliente.razon_social.asc()).all()
     form.cliente_id.choices = [(c.id, c.razon_social) for c in clientes]
 
@@ -37,6 +37,12 @@ def _cargar_choices(form, cliente_id=None):
     if cliente_id:
         lotes_query = lotes_query.filter_by(cliente_id=cliente_id)
     form.lote_id.choices = [(l.id, l.nombre) for l in lotes_query.all()]
+
+    if lote_id:
+        campanias = Campania.query.filter_by(lote_id=lote_id).order_by(Campania.id.desc()).all()
+        form.campania_id.choices = [(c.id, f'{c.nombre} ({c.cultivo})') for c in campanias]
+    else:
+        form.campania_id.choices = []
 
 
 def _construir_detalle(receta_id, producto_id, dosis_val, hectareas):
@@ -135,7 +141,8 @@ def exportar_excel():
 def nueva():
     form = RecetaForm()
     cliente_id = request.form.get('cliente_id', type=int) or request.args.get('cliente_id', type=int)
-    _cargar_choices(form, cliente_id)
+    lote_id = request.form.get('lote_id', type=int)
+    _cargar_choices(form, cliente_id, lote_id)
 
     if form.validate_on_submit():
         productos_ids = request.form.getlist('producto_id[]')
@@ -149,6 +156,7 @@ def nueva():
             numero_receta=Receta.generar_numero(db.session),
             cliente_id=form.cliente_id.data,
             lote_id=form.lote_id.data,
+            campania_id=form.campania_id.data,
             hectareas=form.hectareas.data,
             observaciones=form.observaciones.data,
         )
@@ -173,7 +181,8 @@ def editar(id):
     receta = Receta.query.get_or_404(id)
     form = RecetaForm(obj=receta)
     cliente_id = request.form.get('cliente_id', type=int) or receta.cliente_id
-    _cargar_choices(form, cliente_id)
+    lote_id = request.form.get('lote_id', type=int) or receta.lote_id
+    _cargar_choices(form, cliente_id, lote_id)
 
     if form.validate_on_submit():
         productos_ids = request.form.getlist('producto_id[]')
@@ -185,6 +194,7 @@ def editar(id):
 
         receta.cliente_id = form.cliente_id.data
         receta.lote_id = form.lote_id.data
+        receta.campania_id = form.campania_id.data
         receta.hectareas = form.hectareas.data
         receta.observaciones = form.observaciones.data
 

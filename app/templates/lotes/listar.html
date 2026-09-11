@@ -34,7 +34,6 @@
                 <th>ID</th>
                 <th>Cliente</th>
                 <th>Nombre del Lote</th>
-                <th>Cultivo</th>
                 <th class="text-end">Superficie (ha)</th>
                 <th>Estado</th>
                 <th>Mapa</th>
@@ -47,7 +46,6 @@
                 <td><strong>{{ l.id }}</strong></td>
                 <td>{{ l.cliente.razon_social }}</td>
                 <td>{{ l.nombre }}</td>
-                <td>{{ l.cultivo or '-' }}</td>
                 <td class="text-end">{{ "%.2f"|format(l.superficie_ha) }}</td>
                 <td>
                     {% if l.activo %}
@@ -74,6 +72,7 @@
                     {% endif %}
                 </td>
                 <td class="text-nowrap">
+                    <a href="{{ url_for('campanias.listar', lote_id=l.id) }}" class="btn btn-sm btn-outline-success" title="Campañas de este lote"><i class="fa-solid fa-calendar-days"></i></a>
                     <a href="{{ url_for('lotes.identificar', id=l.id) }}" class="btn btn-sm btn-outline-success" title="Identificar planta por foto"><i class="fa-solid fa-seedling"></i></a>
                     <a href="{{ url_for('lotes.ndvi', id=l.id) }}" class="btn btn-sm btn-outline-primary" title="Ver NDVI"><i class="fa-solid fa-satellite"></i></a>
                     <a href="{{ url_for('lotes.editar', id=l.id) }}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
@@ -84,7 +83,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="8" class="text-center text-muted py-4">No hay lotes registrados.</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-4">No hay lotes registrados.</td></tr>
             {% endfor %}
         </tbody>
     </table>

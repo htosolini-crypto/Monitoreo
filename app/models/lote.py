@@ -9,7 +9,6 @@ class Lote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
-    cultivo = db.Column(db.String(100))
     superficie_ha = db.Column(db.Float, nullable=False, default=0.0)
     latitud = db.Column(db.String(50))
     longitud = db.Column(db.String(50))
@@ -19,3 +18,6 @@ class Lote(db.Model):
     agromonitoring_id = db.Column(db.String(50), nullable=True)
 
     recetas = db.relationship('Receta', backref='lote')
+    campanias = db.relationship(
+        'Campania', back_populates='lote', cascade='all, delete-orphan', order_by='Campania.id.desc()'
+    )

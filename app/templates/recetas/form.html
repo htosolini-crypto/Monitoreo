@@ -16,9 +16,10 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-primary text-white"><strong>1. Datos Generales</strong></div>
         <div class="card-body row g-3">
-            {{ render_field(form.cliente_id, 'col-md-6') }}
+            {{ render_field(form.cliente_id, 'col-md-4') }}
             {{ render_field(form.lote_id, 'col-md-3') }}
-            {{ render_field(form.hectareas, 'col-md-3') }}
+            {{ render_field(form.campania_id, 'col-md-3') }}
+            {{ render_field(form.hectareas, 'col-md-2') }}
             <div class="col-12">
                 {{ form.observaciones.label(class_='form-label fw-bold') }}
                 {{ form.observaciones(class_='form-control', rows=2) }}
@@ -109,6 +110,7 @@
     const hectareasInput = document.getElementById('{{ form.hectareas.id }}');
     const clienteSelect = document.getElementById('{{ form.cliente_id.id }}');
     const loteSelect = document.getElementById('{{ form.lote_id.id }}');
+    const campaniaSelect = document.getElementById('{{ form.campania_id.id }}');
     const loteSeleccionadoInicial = {{ receta.lote_id | tojson if receta else 'null' }};
     const contenedor = document.getElementById('contenedorFilas');
     const template = document.getElementById('filaProductoTemplate');
@@ -179,6 +181,7 @@
     document.getElementById('btnAgregarProducto').addEventListener('click', () => agregarFila());
 
     function cargarLotesDeCliente(clienteId, loteSeleccionado) {
+        campaniaSelect.innerHTML = '';
         if (!clienteId) {
             loteSelect.innerHTML = '';
             return;
@@ -190,14 +193,42 @@
                 data.lotes.forEach(l => {
                     const opt = document.createElement('option');
                     opt.value = l.id;
-                    opt.textContent = l.nombre + (l.cultivo ? ' (' + l.cultivo + ')' : '');
+                    opt.textContent = l.nombre;
                     if (loteSeleccionado && l.id === loteSeleccionado) opt.selected = true;
                     loteSelect.appendChild(opt);
+                });
+                cargarCampaniasDeLote(loteSelect.value, null);
+            });
+    }
+
+    function cargarCampaniasDeLote(loteId, campaniaSeleccionada) {
+        if (!loteId) {
+            campaniaSelect.innerHTML = '';
+            return;
+        }
+        fetch(`/campanias/por_lote/${loteId}`)
+            .then(r => r.json())
+            .then(data => {
+                campaniaSelect.innerHTML = '';
+                if (!data.campanias.length) {
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = 'Sin campañas activas para este lote';
+                    campaniaSelect.appendChild(opt);
+                    return;
+                }
+                data.campanias.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.nombre;
+                    if (campaniaSeleccionada && c.id === campaniaSeleccionada) opt.selected = true;
+                    campaniaSelect.appendChild(opt);
                 });
             });
     }
 
     clienteSelect.addEventListener('change', () => cargarLotesDeCliente(clienteSelect.value, null));
+    loteSelect.addEventListener('change', () => cargarCampaniasDeLote(loteSelect.value, null));
 
     // Inicialización: filas de productos existentes o una fila vacía
     const productosIniciales = JSON.parse(document.getElementById('detallesIniciales').textContent);

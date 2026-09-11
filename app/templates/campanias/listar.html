@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Campañas - Sistema de Gestión y Monitoreo Agronómico{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="h3 fw-bold text-success mb-0"><i class="fa-solid fa-calendar-days me-2"></i>Campañas</h2>
+        {% if lote_filtro %}
+            <span class="text-muted">Lote: <strong>{{ lote_filtro.nombre }}</strong> ({{ lote_filtro.cliente.razon_social }})</span>
+        {% endif %}
+    </div>
+    <a href="{{ url_for('campanias.nueva', cliente_id=cliente_filtro, lote_id=lote_filtro.id if lote_filtro else none) }}" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Nueva Campaña</a>
+</div>
+
+<div class="card mb-3 bg-light border-0">
+    <div class="card-body">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-bold mb-1">Filtrar por Cliente</label>
+                <select name="cliente_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todos los clientes...</option>
+                    {% for c in clientes %}
+                        <option value="{{ c.id }}" {% if cliente_filtro == c.id %}selected{% endif %}>{{ c.razon_social }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if cliente_filtro or lote_filtro %}
+                <div class="col-md-2">
+                    <a href="{{ url_for('campanias.listar') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-xmark me-1"></i> Limpiar</a>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive shadow-sm bg-white rounded">
+    <table class="table table-striped align-middle mb-0">
+        <thead class="table-dark text-nowrap">
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Lote</th>
+                <th>Campaña</th>
+                <th>Cultivo</th>
+                <th>Variedad</th>
+                <th>Fecha Siembra</th>
+                <th>Fecha Cosecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in campanias %}
+            <tr>
+                <td><strong>{{ c.id }}</strong></td>
+                <td>{{ c.lote.cliente.razon_social }}</td>
+                <td>{{ c.lote.nombre }}</td>
+                <td>{{ c.nombre }}</td>
+                <td>{{ c.cultivo }}</td>
+                <td>{{ c.variedad or '-' }}</td>
+                <td>{{ c.fecha_siembra.strftime('%Y-%m-%d') if c.fecha_siembra else '-' }}</td>
+                <td>{{ c.fecha_cosecha.strftime('%Y-%m-%d') if c.fecha_cosecha else '-' }}</td>
+                <td>
+                    {% if c.activo %}
+                        <span class="badge bg-success">Activa</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inactiva</span>
+                    {% endif %}
+                </td>
+                <td class="text-nowrap">
+                    <a href="{{ url_for('campanias.editar', id=c.id) }}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                    <form action="{{ url_for('campanias.eliminar', id=c.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta campaña?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="10" class="text-center text-muted py-4">No hay campañas registradas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

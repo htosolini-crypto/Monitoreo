@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_form_helpers.html" import render_field %}
+{% block title %}{{ titulo }} - Sistema de Gestión y Monitoreo Agronómico{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 fw-bold text-success mb-0">{{ titulo }}</h2>
+    <a href="{{ url_for('campanias.listar') }}" class="btn btn-outline-secondary">Cancelar</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                {{ render_field(form.cliente_id, 'col-md-4') }}
+                {{ render_field(form.lote_id, 'col-md-4') }}
+                {{ render_field(form.nombre, 'col-md-4') }}
+                {{ render_field(form.cultivo, 'col-md-3') }}
+                {{ render_field(form.variedad, 'col-md-3') }}
+                {{ render_field(form.fecha_siembra, 'col-md-3') }}
+                {{ render_field(form.fecha_cosecha, 'col-md-3') }}
+                <div class="col-md-3 d-flex align-items-center">
+                    {{ render_field(form.activo, 'w-100') }}
+                </div>
+                <div class="col-12">
+                    {{ form.observaciones.label(class_='form-label fw-bold') }}
+                    {{ form.observaciones(class_='form-control', rows=2) }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success px-4 mt-2"><i class="fa-solid fa-floppy-disk me-1"></i> Guardar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const clienteSelect = document.getElementById('{{ form.cliente_id.id }}');
+    const loteSelect = document.getElementById('{{ form.lote_id.id }}');
+
+    function cargarLotesDeCliente(clienteId) {
+        if (!clienteId) {
+            loteSelect.innerHTML = '';
+            return;
+        }
+        fetch(`/lotes/por_cliente/${clienteId}`)
+            .then(r => r.json())
+            .then(data => {
+                loteSelect.innerHTML = '';
+                data.lotes.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l.id;
+                    opt.textContent = l.nombre;
+                    loteSelect.appendChild(opt);
+                });
+            });
+    }
+
+    clienteSelect.addEventListener('change', () => cargarLotesDeCliente(clienteSelect.value));
+</script>
+{% endblock %}

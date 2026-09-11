@@ -34,8 +34,9 @@
 <div class="card mb-3">
     <div class="card-header bg-light fw-bold text-uppercase text-secondary small">Datos del Lote y Superficie</div>
     <div class="card-body row g-2">
-        <div class="col-sm-6"><strong>Lote:</strong> {{ receta.lote.nombre }}{% if receta.lote.cultivo %} ({{ receta.lote.cultivo }}){% endif %}</div>
+        <div class="col-sm-6"><strong>Lote:</strong> {{ receta.lote.nombre }}</div>
         <div class="col-sm-6"><strong>Superficie a aplicar:</strong> <span class="badge bg-primary fs-6 fw-normal">{{ "%.2f"|format(receta.hectareas) }} ha</span></div>
+        <div class="col-sm-6"><strong>Campaña:</strong> {{ receta.campania.nombre }} ({{ receta.campania.cultivo }})</div>
         {% if receta.observaciones %}
         <div class="col-12 mt-2 pt-2 border-top"><strong>Observaciones:</strong> {{ receta.observaciones }}</div>
         {% endif %}

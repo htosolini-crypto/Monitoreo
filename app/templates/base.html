@@ -31,6 +31,7 @@
                 {% endif %}
                 {% if current_user.is_admin or current_user.puede_lotes %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('lotes.listar') }}"><i class="fa-solid fa-map-location-dot me-1"></i> Lotes</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('campanias.listar') }}"><i class="fa-solid fa-calendar-days me-1"></i> Campañas</a></li>
                 {% endif %}
                 {% if current_user.is_admin or current_user.puede_productos %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('productos.listar') }}"><i class="fa-solid fa-boxes-stacked me-1"></i> Productos</a></li>

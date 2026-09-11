@@ -166,5 +166,5 @@ def por_cliente(cliente_id):
     """Devuelve los lotes activos de un cliente en JSON, para el combo dinámico del form de recetas."""
     lotes = Lote.query.filter_by(cliente_id=cliente_id, activo=True).order_by(Lote.nombre.asc()).all()
     return {
-        'lotes': [{'id': l.id, 'nombre': l.nombre, 'cultivo': l.cultivo or ''} for l in lotes]
+        'lotes': [{'id': l.id, 'nombre': l.nombre} for l in lotes]
     }

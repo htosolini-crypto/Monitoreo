@@ -42,6 +42,10 @@
         <td><strong>Domicilio:</strong> {{ receta.cliente.domicilio or '-' }}</td>
         <td><strong>Superficie:</strong> {{ "%.2f"|format(receta.hectareas) }} Ha</td>
     </tr>
+    <tr>
+        <td><strong>Campaña:</strong> {{ receta.campania.nombre }}</td>
+        <td><strong>Cultivo:</strong> {{ receta.campania.cultivo }}</td>
+    </tr>
 </table>
 
 <div class="section-title">PRODUCTOS RECOMENDADOS</div>

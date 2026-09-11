@@ -35,6 +35,7 @@
             <tr><td class="info-label">CUIT:</td><td>{{ receta.cliente.cuit or 'N/A' }}</td></tr>
             <tr><td class="info-label">Lote:</td><td>{{ receta.lote.nombre }}</td></tr>
             <tr><td class="info-label">Superficie:</td><td><strong>{{ "%.2f"|format(receta.hectareas) }} ha</strong></td></tr>
+            <tr><td class="info-label">Campaña:</td><td>{{ receta.campania.nombre }} ({{ receta.campania.cultivo }})</td></tr>
         </table>
 
         <h3 style="font-size: 16px; color: #198754; border-bottom: 1px solid #198754; padding-bottom: 5px;">Detalle de Productos</h3>
