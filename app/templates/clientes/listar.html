@@ -32,8 +32,8 @@
                 <td>{{ c.email or '-' }}</td>
                 <td>{{ c.id_coniva or '-' }}</td>
                 <td class="text-center">
-                    {% if c.latitud and c.longitud %}
-                        <a href="https://www.google.com/maps?q={{ c.latitud }},{{ c.longitud }}" target="_blank" class="btn btn-sm btn-outline-success border-0 p-1" title="Ver en Google Maps">
+                    {% if c.enlace_maps %}
+                        <a href="{{ c.enlace_maps }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success border-0 p-1" title="Ver en Google Maps">
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
                                 <path fill="#EA4335" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
                                 <circle fill="#A50E0E" cx="12" cy="9" r="2.5"/>

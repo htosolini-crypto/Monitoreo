@@ -10,6 +10,7 @@ class Lote(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     nombre = db.Column(db.String(100), nullable=False)
     superficie_ha = db.Column(db.Float, nullable=False, default=0.0)
+    enlace_maps = db.Column(db.String(500))
     latitud = db.Column(db.String(50))
     longitud = db.Column(db.String(50))
     activo = db.Column(db.Boolean, nullable=False, default=True)

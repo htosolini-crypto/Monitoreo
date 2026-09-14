@@ -11,6 +11,7 @@ from app.decorators import tiene_permiso_modulo
 from app.models import Lote, Cliente
 from app.services.plantnet import identificar_planta, IdentificacionError
 from app.services.agromonitoring import guardar_poligono, obtener_ndvi, AgromonitoringError
+from app.services.maps import actualizar_coordenadas_desde_enlace
 
 
 @bp.before_request
@@ -50,8 +51,11 @@ def nuevo():
     if form.validate_on_submit():
         lote = Lote()
         form.populate_obj(lote)
+        advertencia = actualizar_coordenadas_desde_enlace(lote)
         db.session.add(lote)
         db.session.commit()
+        if advertencia:
+            flash(advertencia, 'warning')
         flash('Lote agregado exitosamente.', 'success')
         return redirect(url_for('lotes.listar'))
     return render_template('lotes/form.html', form=form, titulo='Nuevo Lote')
@@ -64,8 +68,14 @@ def editar(id):
     form = LoteForm(obj=lote)
     _cargar_choices_cliente(form)
     if form.validate_on_submit():
+        enlace_anterior = lote.enlace_maps
         form.populate_obj(lote)
+        advertencia = None
+        if lote.enlace_maps != enlace_anterior:
+            advertencia = actualizar_coordenadas_desde_enlace(lote)
         db.session.commit()
+        if advertencia:
+            flash(advertencia, 'warning')
         flash('Lote actualizado correctamente.', 'success')
         return redirect(url_for('lotes.listar'))
     return render_template('lotes/form.html', form=form, titulo='Editar Lote')

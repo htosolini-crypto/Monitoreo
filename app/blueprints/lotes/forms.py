@@ -8,8 +8,11 @@ class LoteForm(FlaskForm):
     cliente_id = SelectField('Cliente', coerce=int, validators=[DataRequired()])
     nombre = StringField('Nombre del Lote', validators=[DataRequired()])
     superficie_ha = FloatField('Superficie (ha)', validators=[DataRequired(), NumberRange(min=0)])
-    latitud = StringField('Latitud', validators=[Optional()])
-    longitud = StringField('Longitud', validators=[Optional()])
+    enlace_maps = StringField(
+        'Enlace de Google Maps',
+        validators=[Optional()],
+        render_kw={'placeholder': 'Pegá acá el enlace que copiaste de Google Maps'},
+    )
     activo = BooleanField('Activo', default=True)
 
 

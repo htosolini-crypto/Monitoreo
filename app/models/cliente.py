@@ -14,6 +14,7 @@ class Cliente(db.Model):
     telefono = db.Column(db.String(50))
     email = db.Column(db.String(150))
     id_coniva = db.Column(db.String(100))
+    enlace_maps = db.Column(db.String(500))
     latitud = db.Column(db.String(50))
     longitud = db.Column(db.String(50))
 

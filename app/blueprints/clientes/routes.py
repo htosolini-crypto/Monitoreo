@@ -7,6 +7,7 @@ from app.blueprints.clientes import bp
 from app.blueprints.clientes.forms import ClienteForm
 from app.decorators import tiene_permiso_modulo
 from app.models import Cliente, Parametro
+from app.services.maps import actualizar_coordenadas_desde_enlace
 
 
 @bp.before_request
@@ -37,8 +38,11 @@ def nuevo():
     if form.validate_on_submit():
         cliente = Cliente()
         form.populate_obj(cliente)
+        advertencia = actualizar_coordenadas_desde_enlace(cliente)
         db.session.add(cliente)
         db.session.commit()
+        if advertencia:
+            flash(advertencia, 'warning')
         flash('Cliente agregado exitosamente.', 'success')
         return redirect(url_for('clientes.listar'))
     return render_template('clientes/form.html', form=form, titulo='Nuevo Cliente')
@@ -51,8 +55,14 @@ def editar(id):
     form = ClienteForm(obj=cliente)
     _cargar_choices(form)
     if form.validate_on_submit():
+        enlace_anterior = cliente.enlace_maps
         form.populate_obj(cliente)
+        advertencia = None
+        if cliente.enlace_maps != enlace_anterior:
+            advertencia = actualizar_coordenadas_desde_enlace(cliente)
         db.session.commit()
+        if advertencia:
+            flash(advertencia, 'warning')
         flash('Cliente actualizado correctamente.', 'success')
         return redirect(url_for('clientes.listar'))
     return render_template('clientes/form.html', form=form, titulo='Editar Cliente')

@@ -20,5 +20,8 @@ class ClienteForm(FlaskForm):
     telefono = StringField('Teléfono', validators=[Optional()])
     email = StringField('Email', validators=[Optional(), Email()])
     id_coniva = SelectField('Condición IVA', validators=[Optional()])
-    latitud = StringField('Latitud', validators=[Optional()])
-    longitud = StringField('Longitud', validators=[Optional()])
+    enlace_maps = StringField(
+        'Enlace de Google Maps',
+        validators=[Optional()],
+        render_kw={'placeholder': 'Pegá acá el enlace que copiaste de Google Maps'},
+    )
