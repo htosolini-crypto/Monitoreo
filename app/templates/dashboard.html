@@ -1,5 +1,27 @@
 {% extends "base.html" %}
 {% block title %}Inicio - Sistema de Gestión y Monitoreo Agronómico{% endblock %}
+
+{% macro modulo_card(nombre, descripcion, icono, color, url, habilitado) %}
+<div class="col-md-6 col-lg-3 mb-4">
+    <div class="card h-100 border-0 shadow-sm rounded-3{% if not habilitado %} bg-light{% endif %}">
+        <div class="card-body text-center p-4">
+            <div class="{% if habilitado %}bg-{{ color }} bg-gradient text-white{% else %}bg-secondary bg-opacity-25 text-secondary{% endif %} mb-3 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="fa-solid {{ icono }} fa-lg"></i>
+            </div>
+            <h5 class="fw-bold{% if not habilitado %} text-muted{% endif %}">{{ nombre }}</h5>
+            <p class="text-muted small">{{ descripcion }}</p>
+            {% if habilitado %}
+                <a href="{{ url }}" class="btn btn-outline-{{ color }} rounded-pill px-4">Ingresar</a>
+            {% else %}
+                <span class="btn btn-outline-secondary rounded-pill px-4 disabled" style="pointer-events: none;" title="No tenés permiso para este módulo">
+                    <i class="fa-solid fa-lock me-1"></i> Sin acceso
+                </span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
 {% block content %}
 <div class="mb-4 bg-white p-3 rounded shadow-sm">
     <h2 class="mb-0">Bienvenido, <strong>{{ current_user.usuario }}</strong></h2>
@@ -108,83 +130,16 @@
 </div>
 
 <div class="row">
-    {% if current_user.is_admin or current_user.puede_clientes %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 border-0 shadow-sm rounded-3">
-            <div class="card-body text-center p-4">
-                <div class="bg-primary bg-gradient text-white mb-3 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fa-solid fa-users fa-lg"></i>
-                </div>
-                <h5 class="fw-bold">Clientes</h5>
-                <p class="text-muted small">Administrar registros de clientes.</p>
-                <a href="{{ url_for('clientes.listar') }}" class="btn btn-outline-primary rounded-pill px-4">Ingresar</a>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    {% if current_user.is_admin or current_user.puede_lotes %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 border-0 shadow-sm rounded-3">
-            <div class="card-body text-center p-4">
-                <div class="bg-success bg-gradient text-white mb-3 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fa-solid fa-map-location-dot fa-lg"></i>
-                </div>
-                <h5 class="fw-bold">Lotes</h5>
-                <p class="text-muted small">Seguimiento de lotes y cultivos por cliente.</p>
-                <a href="{{ url_for('lotes.listar') }}" class="btn btn-outline-success rounded-pill px-4">Ingresar</a>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    {% if current_user.is_admin or current_user.puede_productos %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 border-0 shadow-sm rounded-3">
-            <div class="card-body text-center p-4">
-                <div class="bg-warning bg-gradient text-white mb-3 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fa-solid fa-boxes-stacked fa-lg"></i>
-                </div>
-                <h5 class="fw-bold">Productos</h5>
-                <p class="text-muted small">Catálogo de productos, principios activos y marcas.</p>
-                <a href="{{ url_for('productos.listar') }}" class="btn btn-outline-warning rounded-pill px-4">Ingresar</a>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    {% if current_user.is_admin or current_user.puede_recetas %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 border-0 shadow-sm rounded-3">
-            <div class="card-body text-center p-4">
-                <div class="bg-info bg-gradient text-white mb-3 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fa-solid fa-file-prescription fa-lg"></i>
-                </div>
-                <h5 class="fw-bold">Recetas</h5>
-                <p class="text-muted small">Prescripciones de aplicación por cliente y lote.</p>
-                <a href="{{ url_for('recetas.listar') }}" class="btn btn-outline-info rounded-pill px-4">Ingresar</a>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    {% if current_user.is_admin %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 border-0 shadow-sm rounded-3">
-            <div class="card-body text-center p-4">
-                <div class="bg-dark bg-gradient text-white mb-3 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                    <i class="fa-solid fa-user-gear fa-lg"></i>
-                </div>
-                <h5 class="fw-bold">Usuarios</h5>
-                <p class="text-muted small">Alta, edición y permisos de usuarios del sistema.</p>
-                <a href="{{ url_for('usuarios.listar') }}" class="btn btn-outline-dark rounded-pill px-4">Ingresar</a>
-            </div>
-        </div>
-    </div>
-    {% endif %}
+    {{ modulo_card('Clientes', 'Administrar registros de clientes.', 'fa-users', 'primary', url_for('clientes.listar'), current_user.is_admin or current_user.puede_clientes) }}
+    {{ modulo_card('Lotes', 'Seguimiento de lotes por cliente.', 'fa-map-location-dot', 'success', url_for('lotes.listar'), current_user.is_admin or current_user.puede_lotes) }}
+    {{ modulo_card('Campañas', 'Campañas de siembra y cosecha por lote.', 'fa-calendar-days', 'success', url_for('campanias.listar'), current_user.is_admin or current_user.puede_lotes) }}
+    {{ modulo_card('Productos', 'Catálogo de productos, principios activos y marcas.', 'fa-boxes-stacked', 'warning', url_for('productos.listar'), current_user.is_admin or current_user.puede_productos) }}
+    {{ modulo_card('Recetas', 'Prescripciones de aplicación por cliente y lote.', 'fa-file-prescription', 'info', url_for('recetas.listar'), current_user.is_admin or current_user.puede_recetas) }}
+    {{ modulo_card('Estadísticas', 'Reportes y gráficos sobre las recetas cargadas.', 'fa-chart-column', 'info', url_for('estadisticas.index'), current_user.is_admin or current_user.puede_recetas) }}
+    {{ modulo_card('Usuarios', 'Alta, edición y permisos de usuarios del sistema.', 'fa-user-gear', 'dark', url_for('usuarios.listar'), current_user.is_admin) }}
 </div>
 
 {% if not (current_user.is_admin or current_user.puede_clientes or current_user.puede_lotes or current_user.puede_productos or current_user.puede_recetas) %}
-<div class="alert alert-warning">Todavía no tenés acceso a ningún módulo. Pedile a un administrador que te asigne permisos.</div>
+<div class="alert alert-warning"><i class="fa-solid fa-lock me-1"></i> Todavía no tenés acceso a ningún módulo (por eso aparecen bloqueados). Pedile a un administrador que te asigne permisos.</div>
 {% endif %}
 {% endblock %}
