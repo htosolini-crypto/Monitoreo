@@ -7,7 +7,7 @@ from flask_login import login_required, current_user
 from app.blueprints.estadisticas import bp
 from app.blueprints.estadisticas.services import obtener_estadisticas
 from app.decorators import tiene_permiso_modulo
-from app.models import Cliente
+from app.models import Cliente, Campania, PrincipioActivo, Usuario
 
 
 @bp.before_request
@@ -19,12 +19,20 @@ def _verificar_permiso():
         return redirect(url_for('dashboard'))
 
 
+def _cargar_listas_filtro():
+    return {
+        'lista_clientes': Cliente.query.order_by(Cliente.razon_social.asc()).all(),
+        'lista_campanias': Campania.query.order_by(Campania.nombre.desc(), Campania.cultivo.asc()).all(),
+        'lista_principios': [p.nombre for p in PrincipioActivo.query.order_by(PrincipioActivo.nombre.asc()).all()],
+        'lista_usuarios': Usuario.query.order_by(Usuario.usuario.asc()).all(),
+    }
+
+
 @bp.route('/')
 @login_required
 def index():
     datos = obtener_estadisticas(request.args)
-    lista_clientes = Cliente.query.order_by(Cliente.razon_social.asc()).all()
-    return render_template('estadisticas/index.html', datos=datos, lista_clientes=lista_clientes)
+    return render_template('estadisticas/index.html', datos=datos, **_cargar_listas_filtro())
 
 
 @bp.route('/exportar_excel')
@@ -55,6 +63,12 @@ def exportar_excel():
     clientes = pd.DataFrame(datos['top_clientes']).rename(
         columns={'nombre': 'Cliente', 'hectareas': 'Hectáreas Tratadas'}
     )
+    campanias = pd.DataFrame(datos['top_campanias']).rename(
+        columns={'nombre': 'Campaña', 'hectareas': 'Hectáreas Tratadas'}
+    )
+    ingenieros = pd.DataFrame(datos['top_ingenieros']).rename(
+        columns={'nombre': 'Ingeniero', 'recetas': 'Recetas Cargadas', 'hectareas': 'Hectáreas Tratadas'}
+    )
 
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -64,6 +78,8 @@ def exportar_excel():
         tipo_insumo.to_excel(writer, index=False, sheet_name='Por Tipo de Insumo')
         principios.to_excel(writer, index=False, sheet_name='Top Principios Activos')
         clientes.to_excel(writer, index=False, sheet_name='Top Clientes')
+        campanias.to_excel(writer, index=False, sheet_name='Top Campanias')
+        ingenieros.to_excel(writer, index=False, sheet_name='Recetas por Ingeniero')
     output.seek(0)
 
     return send_file(

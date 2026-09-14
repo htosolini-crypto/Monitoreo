@@ -3,7 +3,7 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
     <h2 class="h3 fw-bold text-success mb-0"><i class="fa-solid fa-chart-column me-2"></i>Estadísticas de Recetas</h2>
-    <a href="{{ url_for('estadisticas.exportar_excel', fecha_desde=datos.filtros.fecha_desde, fecha_hasta=datos.filtros.fecha_hasta, cliente_id=datos.filtros.cliente_id) }}" class="btn btn-outline-success">
+    <a href="{{ url_for('estadisticas.exportar_excel', fecha_desde=datos.filtros.fecha_desde, fecha_hasta=datos.filtros.fecha_hasta, cliente_id=datos.filtros.cliente_id, campania_id=datos.filtros.campania_id, principio_activo=datos.filtros.principio_activo, usuario_id=datos.filtros.usuario_id) }}" class="btn btn-outline-success">
         <i class="fa-solid fa-file-excel me-1"></i> Exportar a Excel
     </a>
 </div>
@@ -11,11 +11,11 @@
 <div class="card mb-4 bg-light border-0">
     <div class="card-body">
         <form method="GET" class="row g-3">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label text-secondary small fw-bold mb-1">Fecha desde</label>
                 <input type="date" class="form-control" name="fecha_desde" value="{{ datos.filtros.fecha_desde }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label text-secondary small fw-bold mb-1">Fecha hasta</label>
                 <input type="date" class="form-control" name="fecha_hasta" value="{{ datos.filtros.fecha_hasta }}">
             </div>
@@ -28,8 +28,38 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-2 d-flex align-items-end gap-2">
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-bold mb-1">Campaña</label>
+                <select class="form-select" name="campania_id">
+                    <option value="">Todas las campañas...</option>
+                    {% for c in lista_campanias %}
+                        <option value="{{ c.id }}" {% if datos.filtros.campania_id == c.id|string %}selected{% endif %}>{{ c.nombre }} - {{ c.cultivo }} ({{ c.lote.nombre }} / {{ c.lote.cliente.razon_social }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-bold mb-1">Principio Activo</label>
+                <select class="form-select" name="principio_activo">
+                    <option value="">Todos los principios...</option>
+                    {% for p in lista_principios %}
+                        <option value="{{ p }}" {% if datos.filtros.principio_activo == p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-bold mb-1">Ingeniero</label>
+                <select class="form-select" name="usuario_id">
+                    <option value="">Todos los ingenieros...</option>
+                    {% for u in lista_usuarios %}
+                        <option value="{{ u.id }}" {% if datos.filtros.usuario_id == u.id|string %}selected{% endif %}>{{ u.nombre_para_mostrar }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end gap-2">
                 <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filtrar</button>
+                {% if datos.filtros.fecha_desde or datos.filtros.fecha_hasta or datos.filtros.cliente_id or datos.filtros.campania_id or datos.filtros.principio_activo or datos.filtros.usuario_id %}
+                    <a href="{{ url_for('estadisticas.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-xmark me-1"></i> Limpiar</a>
+                {% endif %}
             </div>
         </form>
     </div>
@@ -97,18 +127,59 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white"><strong>Top 10 clientes por hectáreas tratadas</strong></div>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr><th>Cliente</th><th class="text-end">Hectáreas tratadas</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for c in datos.top_clientes %}
+                        <tr><td>{{ c.nombre }}</td><td class="text-end">{{ "%.2f"|format(c.hectareas) }}</td></tr>
+                        {% else %}
+                        <tr><td colspan="2" class="text-center text-muted py-4">No hay datos para los filtros aplicados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white"><strong>Top 10 campañas por hectáreas tratadas</strong></div>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr><th>Campaña</th><th class="text-end">Hectáreas tratadas</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for c in datos.top_campanias %}
+                        <tr><td>{{ c.nombre }}</td><td class="text-end">{{ "%.2f"|format(c.hectareas) }}</td></tr>
+                        {% else %}
+                        <tr><td colspan="2" class="text-center text-muted py-4">No hay datos para los filtros aplicados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-white"><strong>Top 10 clientes por hectáreas tratadas</strong></div>
+    <div class="card-header bg-white"><strong>Recetas por ingeniero</strong></div>
     <div class="table-responsive">
         <table class="table table-striped align-middle mb-0">
             <thead class="table-dark">
-                <tr><th>Cliente</th><th class="text-end">Hectáreas tratadas</th></tr>
+                <tr><th>Ingeniero</th><th class="text-end">Recetas cargadas</th><th class="text-end">Hectáreas tratadas</th></tr>
             </thead>
             <tbody>
-                {% for c in datos.top_clientes %}
-                <tr><td>{{ c.nombre }}</td><td class="text-end">{{ "%.2f"|format(c.hectareas) }}</td></tr>
+                {% for i in datos.top_ingenieros %}
+                <tr><td>{{ i.nombre }}</td><td class="text-end">{{ i.recetas }}</td><td class="text-end">{{ "%.2f"|format(i.hectareas) }}</td></tr>
                 {% else %}
-                <tr><td colspan="2" class="text-center text-muted py-4">No hay datos para los filtros aplicados.</td></tr>
+                <tr><td colspan="3" class="text-center text-muted py-4">No hay datos para los filtros aplicados.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

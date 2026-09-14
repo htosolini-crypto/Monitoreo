@@ -1,7 +1,7 @@
 from sqlalchemy import func
 
 from app.extensions import db
-from app.models import Receta, RecetaDetalle, Producto, Cliente, PrincipioActivo
+from app.models import Receta, RecetaDetalle, Producto, Cliente, PrincipioActivo, Campania, Usuario
 
 
 def _leer_filtros(args):
@@ -9,6 +9,9 @@ def _leer_filtros(args):
         'fecha_desde': (args.get('fecha_desde') or '').strip(),
         'fecha_hasta': (args.get('fecha_hasta') or '').strip(),
         'cliente_id': args.get('cliente_id', '').strip() if args.get('cliente_id') else '',
+        'campania_id': args.get('campania_id', '').strip() if args.get('campania_id') else '',
+        'usuario_id': args.get('usuario_id', '').strip() if args.get('usuario_id') else '',
+        'principio_activo': (args.get('principio_activo') or '').strip(),
     }
 
 
@@ -19,6 +22,18 @@ def _filtrar_recetas(query, filtros):
         query = query.filter(func.date(Receta.fecha) <= filtros['fecha_hasta'])
     if filtros['cliente_id']:
         query = query.filter(Receta.cliente_id == filtros['cliente_id'])
+    if filtros['campania_id']:
+        query = query.filter(Receta.campania_id == filtros['campania_id'])
+    if filtros['usuario_id']:
+        query = query.filter(Receta.usuario_id == filtros['usuario_id'])
+    if filtros['principio_activo']:
+        subq = (
+            db.session.query(RecetaDetalle.receta_id)
+            .join(Producto, RecetaDetalle.producto_id == Producto.id)
+            .join(PrincipioActivo, Producto.principio_activo_id == PrincipioActivo.id)
+            .filter(PrincipioActivo.nombre == filtros['principio_activo'])
+        )
+        query = query.filter(Receta.id.in_(subq))
     return query
 
 
@@ -143,6 +158,51 @@ def obtener_estadisticas(args):
     )
     top_clientes = [{'nombre': f.razon_social, 'hectareas': round(f.hectareas or 0, 2)} for f in filas]
 
+    # --- Top campañas por hectáreas (sobre Receta+Campania, sin join a detalle) ---
+    filas = (
+        _filtrar_recetas(
+            db.session.query(
+                Campania.nombre,
+                Campania.cultivo,
+                func.sum(Receta.hectareas).label('hectareas'),
+            )
+            .join(Receta, Receta.campania_id == Campania.id),
+            filtros,
+        )
+        .group_by(Campania.id, Campania.nombre, Campania.cultivo)
+        .order_by(func.sum(Receta.hectareas).desc())
+        .limit(10)
+        .all()
+    )
+    top_campanias = [
+        {'nombre': f'{f.nombre} ({f.cultivo})', 'hectareas': round(f.hectareas or 0, 2)} for f in filas
+    ]
+
+    # --- Recetas por ingeniero (sobre Receta+Usuario, sin join a detalle) ---
+    filas = (
+        _filtrar_recetas(
+            db.session.query(
+                Usuario.usuario,
+                Usuario.nombre_completo,
+                func.count(Receta.id).label('recetas'),
+                func.sum(Receta.hectareas).label('hectareas'),
+            )
+            .join(Receta, Receta.usuario_id == Usuario.id),
+            filtros,
+        )
+        .group_by(Usuario.id, Usuario.usuario, Usuario.nombre_completo)
+        .order_by(func.sum(Receta.hectareas).desc())
+        .all()
+    )
+    top_ingenieros = [
+        {
+            'nombre': f.nombre_completo or f.usuario,
+            'recetas': f.recetas,
+            'hectareas': round(f.hectareas or 0, 2),
+        }
+        for f in filas
+    ]
+
     return {
         'filtros': filtros,
         'hectareas_total': round(hectareas_total or 0, 2),
@@ -154,4 +214,6 @@ def obtener_estadisticas(args):
         'por_tipo_insumo': por_tipo_insumo,
         'top_principios': top_principios,
         'top_clientes': top_clientes,
+        'top_campanias': top_campanias,
+        'top_ingenieros': top_ingenieros,
     }
