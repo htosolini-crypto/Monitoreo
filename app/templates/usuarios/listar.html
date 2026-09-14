@@ -11,6 +11,7 @@
         <thead class="table-dark text-nowrap">
             <tr>
                 <th>Usuario</th>
+                <th>Nombre Completo</th>
                 <th>Email</th>
                 <th>Admin</th>
                 <th>Activo</th>
@@ -22,6 +23,7 @@
             {% for u in usuarios %}
             <tr>
                 <td><strong>{{ u.usuario }}</strong></td>
+                <td>{{ u.nombre_completo or '-' }}</td>
                 <td>{{ u.email or '-' }}</td>
                 <td>
                     {% if u.is_admin %}<span class="badge bg-primary">Admin</span>{% else %}-{% endif %}
@@ -52,7 +54,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="6" class="text-center text-muted py-4">No hay usuarios registrados.</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-4">No hay usuarios registrados.</td></tr>
             {% endfor %}
         </tbody>
     </table>

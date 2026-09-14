@@ -68,6 +68,7 @@
                 <th>Fecha</th>
                 <th>Cliente</th>
                 <th>Lote</th>
+                <th>Profesional</th>
                 <th class="text-end">Superficie (Ha)</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -79,6 +80,7 @@
                 <td>{{ r.fecha.strftime('%Y-%m-%d') if r.fecha else '-' }}</td>
                 <td>{{ r.cliente.razon_social }}</td>
                 <td>{{ r.lote.nombre }}</td>
+                <td>{{ r.profesional.nombre_para_mostrar }}</td>
                 <td class="text-end">{{ "%.2f"|format(r.hectareas) }}</td>
                 <td class="text-center">
                     <div class="btn-group" role="group">
@@ -93,7 +95,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="6" class="text-center text-muted py-4">
+                <td colspan="7" class="text-center text-muted py-4">
                     {% if q or fecha_desde or fecha_hasta or cliente_filtro or principio_activo_filtro or receta_desde or receta_hasta %}
                         No se encontraron recetas con los criterios de búsqueda ingresados.
                     {% else %}

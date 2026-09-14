@@ -11,11 +11,13 @@ class Receta(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     lote_id = db.Column(db.Integer, db.ForeignKey('lotes.id'), nullable=False)
     campania_id = db.Column(db.Integer, db.ForeignKey('campanias.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
     hectareas = db.Column(db.Float, nullable=False, default=0.0)
     observaciones = db.Column(db.Text)
 
     campania = db.relationship('Campania')
+    profesional = db.relationship('Usuario')
 
     detalles = db.relationship(
         'RecetaDetalle', backref='receta', cascade='all, delete-orphan'

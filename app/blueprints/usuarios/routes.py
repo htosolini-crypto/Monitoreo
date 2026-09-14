@@ -11,7 +11,12 @@ from app.models import Usuario
 
 def _aplicar_datos(usuario, form, requerir_password):
     usuario.usuario = form.usuario.data
+    usuario.nombre_completo = form.nombre_completo.data
     usuario.email = form.email.data
+    usuario.matricula = form.matricula.data
+    usuario.cuit = form.cuit.data
+    usuario.domicilio = form.domicilio.data
+    usuario.telefono = form.telefono.data
     usuario.is_admin = form.is_admin.data
     usuario.activo = form.activo.data
     usuario.puede_clientes = form.puede_clientes.data

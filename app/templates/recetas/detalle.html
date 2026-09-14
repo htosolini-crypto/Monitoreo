@@ -32,6 +32,18 @@
 </div>
 
 <div class="card mb-3">
+    <div class="card-header bg-light fw-bold text-uppercase text-secondary small">Profesional Responsable</div>
+    <div class="card-body row g-2">
+        <div class="col-sm-6"><strong>Nombre:</strong> {{ receta.profesional.nombre_para_mostrar }}</div>
+        <div class="col-sm-6"><strong>N° de Matrícula:</strong> {{ receta.profesional.matricula or '-' }}</div>
+        <div class="col-sm-6"><strong>CUIT:</strong> {{ receta.profesional.cuit or '-' }}</div>
+        <div class="col-sm-6"><strong>Domicilio:</strong> {{ receta.profesional.domicilio or '-' }}</div>
+        <div class="col-sm-6"><strong>Teléfono:</strong> {{ receta.profesional.telefono or '-' }}</div>
+        <div class="col-sm-6"><strong>Email:</strong> {{ receta.profesional.email or '-' }}</div>
+    </div>
+</div>
+
+<div class="card mb-3">
     <div class="card-header bg-light fw-bold text-uppercase text-secondary small">Datos del Lote y Superficie</div>
     <div class="card-body row g-2">
         <div class="col-sm-6"><strong>Lote:</strong> {{ receta.lote.nombre }}</div>

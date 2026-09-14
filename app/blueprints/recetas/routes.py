@@ -92,6 +92,7 @@ def exportar_excel():
                     'Fecha': r.fecha,
                     'Cliente': r.cliente.razon_social,
                     'Lote': r.lote.nombre,
+                    'Profesional': r.profesional.nombre_para_mostrar,
                     'Hectáreas': r.hectareas,
                     'Producto': d.producto.denominacion_comercial,
                     'Principio Activo': d.producto.principio_activo.nombre,
@@ -109,6 +110,7 @@ def exportar_excel():
                 'Fecha': r.fecha,
                 'Cliente': r.cliente.razon_social,
                 'Lote': r.lote.nombre,
+                'Profesional': r.profesional.nombre_para_mostrar,
                 'Hectáreas': r.hectareas,
                 'Producto': '-',
                 'Principio Activo': '-',
@@ -157,6 +159,7 @@ def nueva():
             cliente_id=form.cliente_id.data,
             lote_id=form.lote_id.data,
             campania_id=form.campania_id.data,
+            usuario_id=current_user.id,
             hectareas=form.hectareas.data,
             observaciones=form.observaciones.data,
         )
