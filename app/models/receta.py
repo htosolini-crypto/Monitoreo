@@ -1,6 +1,11 @@
 from datetime import datetime
 
+from itsdangerous import URLSafeTimedSerializer, BadSignature
+from flask import current_app
+
 from app.extensions import db
+
+TOKEN_PUBLICO_SALT = 'receta-publica'
 
 
 class Receta(db.Model):
@@ -42,6 +47,19 @@ class Receta(db.Model):
             nuevo_num = 1
 
         return f"{prefijo}{nuevo_num:04d}"
+
+    def generar_token_publico(self):
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        return serializer.dumps(self.id, salt=TOKEN_PUBLICO_SALT)
+
+    @staticmethod
+    def verificar_token_publico(token):
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        try:
+            receta_id = serializer.loads(token, salt=TOKEN_PUBLICO_SALT)
+        except BadSignature:
+            return None
+        return db.session.get(Receta, receta_id)
 
 
 class RecetaDetalle(db.Model):

@@ -1,7 +1,8 @@
 import io
 from datetime import datetime
+from urllib.parse import quote
 
-from flask import render_template, redirect, url_for, flash, request, send_file, make_response
+from flask import render_template, redirect, url_for, flash, request, send_file, make_response, abort
 from flask_login import login_required, current_user
 import pandas as pd
 
@@ -17,11 +18,15 @@ from app.blueprints.recetas.forms import RecetaForm
 from app.blueprints.recetas.services import obtener_recetas_filtradas
 from app.decorators import tiene_permiso_modulo
 from app.models import Receta, RecetaDetalle, Cliente, Lote, Campania, Producto, PrincipioActivo
+from app.utils import formatear_telefono_whatsapp
 from flask_mail import Message
 
 
 @bp.before_request
 def _verificar_permiso():
+    # Excepción: el link público del PDF se comparte por WhatsApp/email sin login.
+    if request.endpoint == 'recetas.ver_publico':
+        return None
     if not current_user.is_authenticated:
         return None
     if not tiene_permiso_modulo('puede_recetas'):
@@ -218,7 +223,18 @@ def editar(id):
 @login_required
 def ver(id):
     receta = Receta.query.get_or_404(id)
-    return render_template('recetas/detalle.html', receta=receta)
+
+    whatsapp_link = None
+    telefono = formatear_telefono_whatsapp(receta.cliente.telefono)
+    if telefono:
+        link_pdf = url_for('recetas.ver_publico', token=receta.generar_token_publico(), _external=True)
+        mensaje = (
+            f'Hola {receta.cliente.razon_social}, te comparto la Receta de Aplicación '
+            f'N° {receta.numero_receta}: {link_pdf}'
+        )
+        whatsapp_link = f'https://wa.me/{telefono}?text={quote(mensaje)}'
+
+    return render_template('recetas/detalle.html', receta=receta, whatsapp_link=whatsapp_link)
 
 
 @bp.route('/<int:id>/imprimir')
@@ -232,6 +248,27 @@ def imprimir(id):
 @login_required
 def descargar_pdf(id):
     receta = Receta.query.get_or_404(id)
+    html = render_template('recetas/pdf.html', receta=receta, auto_print=False)
+
+    if PDF_SUPPORT:
+        buffer = io.BytesIO()
+        pisa_status = pisa.CreatePDF(io.StringIO(html), dest=buffer)
+        if not pisa_status.err:
+            response = make_response(buffer.getvalue())
+            response.headers['Content-Type'] = 'application/pdf'
+            response.headers['Content-Disposition'] = f'inline; filename=Receta_{receta.numero_receta}.pdf'
+            return response
+
+    return html
+
+
+@bp.route('/publico/<token>')
+def ver_publico(token):
+    """Muestra el PDF de la receta sin requerir login, para compartir por WhatsApp/email."""
+    receta = Receta.verificar_token_publico(token)
+    if not receta:
+        abort(404)
+
     html = render_template('recetas/pdf.html', receta=receta, auto_print=False)
 
     if PDF_SUPPORT:

@@ -41,3 +41,15 @@ def validar_cuit(cuit):
             return False
 
     return verificador == int(digitos[10])
+
+
+def formatear_telefono_whatsapp(telefono):
+    """Normaliza un teléfono argentino al formato que espera wa.me (código de país + '9' para celulares)."""
+    digitos = re.sub(r'\D', '', telefono or '')
+    if not digitos:
+        return None
+    if digitos.startswith('54'):
+        return digitos
+    if digitos.startswith('0'):
+        digitos = digitos[1:]
+    return f'549{digitos}'
