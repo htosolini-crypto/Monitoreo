@@ -18,7 +18,11 @@ class UsuarioForm(FlaskForm):
     matricula = StringField('N° de Matrícula', validators=[Optional()])
     cuit = StringField('CUIT', validators=[Optional(), cuit_valido])
     domicilio = StringField('Domicilio', validators=[Optional()])
-    telefono = StringField('Teléfono', validators=[Optional()])
+    telefono = StringField(
+        'Teléfono',
+        validators=[Optional()],
+        render_kw={'placeholder': 'Ej: 3401555555 (código de área + número, sin 0 ni 15)'},
+    )
     is_admin = BooleanField('Administrador')
     activo = BooleanField('Activo', default=True)
     puede_clientes = BooleanField('Clientes')

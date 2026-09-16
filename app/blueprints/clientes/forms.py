@@ -17,7 +17,11 @@ class ClienteForm(FlaskForm):
     numero = StringField('Número', validators=[Optional()])
     codigo_postal = StringField('Código Postal', validators=[Optional()])
     localidad = StringField('Localidad', validators=[Optional()])
-    telefono = StringField('Teléfono', validators=[Optional()])
+    telefono = StringField(
+        'Teléfono',
+        validators=[Optional()],
+        render_kw={'placeholder': 'Ej: 3401555555 (código de área + número, sin 0 ni 15)'},
+    )
     email = StringField('Email', validators=[Optional(), Email()])
     id_coniva = SelectField('Condición IVA', validators=[Optional()])
     enlace_maps = StringField(
