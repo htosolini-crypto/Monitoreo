@@ -10,6 +10,7 @@ class Parametro(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     categoria = db.Column(db.String(50), nullable=False)
     valor = db.Column(db.String(150), nullable=False)
+    abreviatura = db.Column(db.String(20))
     orden = db.Column(db.Integer, nullable=False, default=0)
     activo = db.Column(db.Boolean, nullable=False, default=True)
 

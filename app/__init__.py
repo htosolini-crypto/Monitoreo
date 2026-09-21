@@ -34,6 +34,7 @@ def create_app(config_class=Config):
     from app.blueprints.recetas import bp as recetas_bp
     from app.blueprints.usuarios import bp as usuarios_bp
     from app.blueprints.estadisticas import bp as estadisticas_bp
+    from app.blueprints.parametros import bp as parametros_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(clientes_bp)
@@ -44,6 +45,7 @@ def create_app(config_class=Config):
     app.register_blueprint(recetas_bp)
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(estadisticas_bp)
+    app.register_blueprint(parametros_bp)
 
     from flask import render_template
     from flask_login import login_required, current_user

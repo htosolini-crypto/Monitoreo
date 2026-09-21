@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Parámetros - Sistema de Gestión y Monitoreo Agronómico{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h3 fw-bold text-success mb-0"><i class="fa-solid fa-sliders me-2"></i>Parámetros</h2>
+    <a href="{{ url_for('parametros.nuevo') }}" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Nuevo Parámetro</a>
+</div>
+<p class="text-muted small">Ítems que alimentan los combos de la aplicación (Condición IVA, Unidad, Tipo de Insumo, etc.).</p>
+
+<div class="card mb-3 bg-light border-0">
+    <div class="card-body">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-bold mb-1">Filtrar por Categoría</label>
+                <select name="categoria" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todas las categorías...</option>
+                    {% for c in categorias %}
+                        <option value="{{ c }}" {% if categoria_filtro == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if categoria_filtro %}
+                <div class="col-md-2">
+                    <a href="{{ url_for('parametros.listar') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-xmark me-1"></i> Limpiar</a>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive shadow-sm bg-white rounded">
+    <table class="table table-striped align-middle mb-0">
+        <thead class="table-dark text-nowrap">
+            <tr>
+                <th>Categoría</th>
+                <th>Valor</th>
+                <th>Abreviatura</th>
+                <th class="text-end">Orden</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in parametros %}
+            <tr>
+                <td><span class="badge bg-secondary">{{ p.categoria }}</span></td>
+                <td>{{ p.valor }}</td>
+                <td>{{ p.abreviatura or '-' }}</td>
+                <td class="text-end">{{ p.orden }}</td>
+                <td>
+                    {% if p.activo %}
+                        <span class="badge bg-success">Activo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td class="text-nowrap">
+                    <a href="{{ url_for('parametros.editar', id=p.id) }}" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                    <form action="{{ url_for('parametros.eliminar', id=p.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este parámetro?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No hay parámetros registrados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

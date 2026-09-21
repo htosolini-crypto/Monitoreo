@@ -137,6 +137,7 @@
     {{ modulo_card('Recetas', 'Prescripciones de aplicación por cliente y lote.', 'fa-file-prescription', 'info', url_for('recetas.listar'), current_user.is_admin or current_user.puede_recetas) }}
     {{ modulo_card('Estadísticas', 'Reportes y gráficos sobre las recetas cargadas.', 'fa-chart-column', 'info', url_for('estadisticas.index'), current_user.is_admin or current_user.puede_recetas) }}
     {{ modulo_card('Usuarios', 'Alta, edición y permisos de usuarios del sistema.', 'fa-user-gear', 'dark', url_for('usuarios.listar'), current_user.is_admin) }}
+    {{ modulo_card('Parámetros', 'Ítems de los combos del sistema (Condición IVA, Unidad, etc.).', 'fa-sliders', 'dark', url_for('parametros.listar'), current_user.is_admin) }}
 </div>
 
 {% if not (current_user.is_admin or current_user.puede_clientes or current_user.puede_lotes or current_user.puede_productos or current_user.puede_recetas) %}
