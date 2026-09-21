@@ -17,7 +17,7 @@ from app.blueprints.recetas import bp
 from app.blueprints.recetas.forms import RecetaForm
 from app.blueprints.recetas.services import obtener_recetas_filtradas
 from app.decorators import tiene_permiso_modulo
-from app.models import Receta, RecetaDetalle, Cliente, Lote, Campania, Producto, PrincipioActivo
+from app.models import Receta, RecetaDetalle, Cliente, Lote, Campania, Producto, PrincipioActivo, Parametro
 from app.utils import formatear_telefono_whatsapp
 from flask_mail import Message
 
@@ -48,6 +48,13 @@ def _cargar_choices(form, cliente_id=None, lote_id=None):
         form.campania_id.choices = [(c.id, f'{c.nombre} ({c.cultivo})') for c in campanias]
     else:
         form.campania_id.choices = []
+
+
+def _unidades_abreviadas():
+    return {
+        p.valor: (p.abreviatura or p.valor)
+        for p in Parametro.query.filter_by(categoria='unidad_producto').all()
+    }
 
 
 def _construir_detalle(receta_id, producto_id, dosis_val, hectareas):
@@ -157,7 +164,13 @@ def nueva():
 
         if not productos_ids:
             flash('Debes seleccionar al menos un producto.', 'danger')
-            return render_template('recetas/form.html', form=form, titulo='Nueva Receta', productos=Producto.query.order_by(Producto.denominacion_comercial.asc()).all())
+            return render_template(
+                'recetas/form.html',
+                form=form,
+                titulo='Nueva Receta',
+                productos=Producto.query.order_by(Producto.denominacion_comercial.asc()).all(),
+                unidades_abrev=_unidades_abreviadas(),
+            )
 
         receta = Receta(
             numero_receta=Receta.generar_numero(db.session),
@@ -180,7 +193,14 @@ def nueva():
 
     productos = Producto.query.order_by(Producto.denominacion_comercial.asc()).all()
     proximo_numero = Receta.generar_numero(db.session)
-    return render_template('recetas/form.html', form=form, titulo='Nueva Receta', productos=productos, proximo_numero=proximo_numero)
+    return render_template(
+        'recetas/form.html',
+        form=form,
+        titulo='Nueva Receta',
+        productos=productos,
+        proximo_numero=proximo_numero,
+        unidades_abrev=_unidades_abreviadas(),
+    )
 
 
 @bp.route('/<int:id>/editar', methods=['GET', 'POST'])
@@ -216,7 +236,14 @@ def editar(id):
         return redirect(url_for('recetas.listar'))
 
     productos = Producto.query.order_by(Producto.denominacion_comercial.asc()).all()
-    return render_template('recetas/form.html', form=form, titulo='Editar Receta', receta=receta, productos=productos)
+    return render_template(
+        'recetas/form.html',
+        form=form,
+        titulo='Editar Receta',
+        receta=receta,
+        productos=productos,
+        unidades_abrev=_unidades_abreviadas(),
+    )
 
 
 @bp.route('/<int:id>')

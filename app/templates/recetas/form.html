@@ -36,11 +36,11 @@
             <table class="table align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 24%;">Producto</th>
-                        <th style="width: 18%;">Principio Activo</th>
-                        <th style="width: 13%;">Dosis (por Ha)</th>
-                        <th style="width: 15%;">Cantidad Total</th>
-                        <th style="width: 13%;">Precio Unit.</th>
+                        <th style="width: 22%;">Producto</th>
+                        <th style="width: 16%;">Principio Activo</th>
+                        <th style="width: 17%;">Dosis (por Ha)</th>
+                        <th style="width: 16%;">Cantidad Total</th>
+                        <th style="width: 12%;">Precio Unit.</th>
                         <th style="width: 13%;">Importe</th>
                         <th style="width: 4%;" class="text-center">Quitar</th>
                     </tr>
@@ -68,7 +68,7 @@
             <select name="producto_id[]" class="form-select producto-select" required onchange="actualizarUnidad(this)">
                 <option value="">-- Seleccionar --</option>
                 {% for p in productos %}
-                    <option value="{{ p.id }}" data-unidad="{{ p.unidad }}" data-precio="{{ p.precio }}" data-principio="{{ p.principio_activo.nombre }}">{{ p.denominacion_comercial }} ({{ p.marca }})</option>
+                    <option value="{{ p.id }}" data-unidad="{{ unidades_abrev.get(p.unidad, p.unidad) }}" data-precio="{{ p.precio }}" data-principio="{{ p.principio_activo.nombre }}">{{ p.denominacion_comercial }} ({{ p.marca }})</option>
                 {% endfor %}
             </select>
         </td>
@@ -229,6 +229,15 @@
 
     clienteSelect.addEventListener('change', () => cargarLotesDeCliente(clienteSelect.value, null));
     loteSelect.addEventListener('change', () => cargarCampaniasDeLote(loteSelect.value, null));
+
+    // En una receta nueva, el combo de Lote ya viene con un valor preseleccionado por el navegador
+    // y el evento "change" nunca se dispara solo, así que hay que cargar las campañas a mano.
+    // En edición no hace falta: el combo de Campaña ya viene armado desde el servidor (incluye
+    // campañas inactivas si la receta estaba asociada a una, cosa que el JSON de /por_lote no trae).
+    const esNueva = {{ 'false' if receta else 'true' }};
+    if (esNueva && loteSelect.value) {
+        cargarCampaniasDeLote(loteSelect.value, null);
+    }
 
     // Inicialización: filas de productos existentes o una fila vacía
     const productosIniciales = JSON.parse(document.getElementById('detallesIniciales').textContent);
