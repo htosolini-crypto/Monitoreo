@@ -57,6 +57,10 @@ def _unidades_abreviadas():
     }
 
 
+def _superficie_por_lote():
+    return {l.id: l.superficie_ha for l in Lote.query.all()}
+
+
 def _construir_detalle(receta_id, producto_id, dosis_val, hectareas):
     producto = Producto.query.get(int(producto_id))
     dosis = float(dosis_val or 0.0)
@@ -170,6 +174,7 @@ def nueva():
                 titulo='Nueva Receta',
                 productos=Producto.query.order_by(Producto.denominacion_comercial.asc()).all(),
                 unidades_abrev=_unidades_abreviadas(),
+                lotes_superficie=_superficie_por_lote(),
             )
 
         receta = Receta(
@@ -200,6 +205,7 @@ def nueva():
         productos=productos,
         proximo_numero=proximo_numero,
         unidades_abrev=_unidades_abreviadas(),
+        lotes_superficie=_superficie_por_lote(),
     )
 
 
@@ -243,6 +249,7 @@ def editar(id):
         receta=receta,
         productos=productos,
         unidades_abrev=_unidades_abreviadas(),
+        lotes_superficie=_superficie_por_lote(),
     )
 
 

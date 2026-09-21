@@ -105,6 +105,9 @@
 <script id="dosisIniciales" type="application/json">
     {{ ((receta.detalles | map(attribute='dosis') | list) if receta else []) | tojson }}
 </script>
+<script id="lotesSuperficie" type="application/json">
+    {{ lotes_superficie | tojson }}
+</script>
 
 <script>
     const hectareasInput = document.getElementById('{{ form.hectareas.id }}');
@@ -112,8 +115,17 @@
     const loteSelect = document.getElementById('{{ form.lote_id.id }}');
     const campaniaSelect = document.getElementById('{{ form.campania_id.id }}');
     const loteSeleccionadoInicial = {{ receta.lote_id | tojson if receta else 'null' }};
+    const lotesSuperficie = JSON.parse(document.getElementById('lotesSuperficie').textContent);
     const contenedor = document.getElementById('contenedorFilas');
     const template = document.getElementById('filaProductoTemplate');
+
+    function actualizarHectareasPorLote(loteId) {
+        const superficie = lotesSuperficie[loteId];
+        if (superficie !== undefined) {
+            hectareasInput.value = superficie;
+            document.querySelectorAll('.input-dosis').forEach(input => calcularFila(input));
+        }
+    }
 
     function agregarFila(productoId, dosis) {
         const clone = template.content.cloneNode(true);
@@ -198,6 +210,7 @@
                     loteSelect.appendChild(opt);
                 });
                 cargarCampaniasDeLote(loteSelect.value, null);
+                actualizarHectareasPorLote(loteSelect.value);
             });
     }
 
@@ -228,7 +241,10 @@
     }
 
     clienteSelect.addEventListener('change', () => cargarLotesDeCliente(clienteSelect.value, null));
-    loteSelect.addEventListener('change', () => cargarCampaniasDeLote(loteSelect.value, null));
+    loteSelect.addEventListener('change', () => {
+        cargarCampaniasDeLote(loteSelect.value, null);
+        actualizarHectareasPorLote(loteSelect.value);
+    });
 
     // En una receta nueva, el combo de Lote ya viene con un valor preseleccionado por el navegador
     // y el evento "change" nunca se dispara solo, así que hay que cargar las campañas a mano.
@@ -237,6 +253,7 @@
     const esNueva = {{ 'false' if receta else 'true' }};
     if (esNueva && loteSelect.value) {
         cargarCampaniasDeLote(loteSelect.value, null);
+        actualizarHectareasPorLote(loteSelect.value);
     }
 
     // Inicialización: filas de productos existentes o una fila vacía
