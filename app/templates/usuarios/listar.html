@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_table_helpers.html" import th_orden %}
 {% block title %}Usuarios - Sistema de Gestión y Monitoreo Agronómico{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -6,16 +7,23 @@
     <a href="{{ url_for('usuarios.nuevo') }}" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Nuevo Usuario</a>
 </div>
 
+<div class="mb-3">
+    <div class="input-group" style="max-width: 400px;">
+        <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" class="form-control buscador-tabla" data-tabla="#tablaUsuarios" placeholder="Buscar en cualquier columna...">
+    </div>
+</div>
+
 <div class="table-responsive shadow-sm bg-white rounded">
-    <table class="table table-striped align-middle mb-0">
+    <table id="tablaUsuarios" class="table table-striped align-middle mb-0">
         <thead class="table-dark text-nowrap">
             <tr>
-                <th>Usuario</th>
-                <th>Nombre Completo</th>
-                <th>Email</th>
-                <th>Admin</th>
-                <th>Activo</th>
-                <th>Permisos</th>
+                {{ th_orden('Usuario') }}
+                {{ th_orden('Nombre Completo') }}
+                {{ th_orden('Email') }}
+                {{ th_orden('Admin') }}
+                {{ th_orden('Activo') }}
+                {{ th_orden('Permisos') }}
                 <th>Acciones</th>
             </tr>
         </thead>

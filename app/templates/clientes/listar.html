@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_table_helpers.html" import th_orden %}
 {% block title %}Clientes - Sistema de Gestión y Monitoreo Agronómico{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -6,17 +7,24 @@
     <a href="{{ url_for('clientes.nuevo') }}" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Nuevo Cliente</a>
 </div>
 
+<div class="mb-3">
+    <div class="input-group" style="max-width: 400px;">
+        <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <input type="text" class="form-control buscador-tabla" data-tabla="#tablaClientes" placeholder="Buscar en cualquier columna...">
+    </div>
+</div>
+
 <div class="table-responsive shadow-sm bg-white rounded">
-    <table class="table table-striped align-middle mb-0">
+    <table id="tablaClientes" class="table table-striped align-middle mb-0">
         <thead class="table-dark text-nowrap">
             <tr>
-                <th>ID</th>
-                <th>CUIT</th>
-                <th>Razón Social</th>
-                <th>Localidad</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th>Condición IVA</th>
+                {{ th_orden('ID') }}
+                {{ th_orden('CUIT') }}
+                {{ th_orden('Razón Social') }}
+                {{ th_orden('Localidad') }}
+                {{ th_orden('Teléfono') }}
+                {{ th_orden('Email') }}
+                {{ th_orden('Condición IVA') }}
                 <th>Mapa</th>
                 <th>Acciones</th>
             </tr>

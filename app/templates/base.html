@@ -11,6 +11,9 @@
         @media (max-width: 575.98px) {
             .navbar-brand { font-size: 1.05rem; }
         }
+        th.sortable { cursor: pointer; user-select: none; }
+        th.sortable:hover { text-decoration: underline; }
+        th.sortable .icono-orden { opacity: .6; }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -71,6 +74,73 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Búsqueda instantánea sobre todas las columnas: <input class="buscador-tabla" data-tabla="#idDeLaTabla">
+    document.addEventListener('input', function (e) {
+        if (!e.target.classList.contains('buscador-tabla')) return;
+        const texto = e.target.value.trim().toLowerCase();
+        const tabla = document.querySelector(e.target.dataset.tabla);
+        if (!tabla) return;
+        tabla.querySelectorAll('tbody tr').forEach(function (fila) {
+            fila.style.display = fila.textContent.toLowerCase().includes(texto) ? '' : 'none';
+        });
+    });
+
+    // Ordenamiento al cliquear el título de una columna: <th class="sortable">...<i class="fa-solid fa-sort icono-orden ms-1"></i></th>
+    document.addEventListener('click', function (e) {
+        const th = e.target.closest('th.sortable');
+        if (!th) return;
+        const tabla = th.closest('table');
+        const thead = th.closest('thead');
+        const tbody = tabla.querySelector('tbody');
+        const indice = [...th.parentElement.children].indexOf(th);
+        const direccion = th.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+
+        thead.querySelectorAll('th.sortable').forEach(function (h) {
+            h.dataset.sortDir = '';
+            const icono = h.querySelector('.icono-orden');
+            if (icono) icono.className = 'fa-solid fa-sort icono-orden ms-1';
+        });
+        th.dataset.sortDir = direccion;
+        const iconoActual = th.querySelector('.icono-orden');
+        if (iconoActual) {
+            iconoActual.className = 'fa-solid fa-sort-' + (direccion === 'asc' ? 'up' : 'down') + ' icono-orden ms-1';
+        }
+
+        const filas = [...tbody.querySelectorAll('tr')].filter(fila => fila.children.length > 1);
+
+        function valorCelda(fila) {
+            const celda = fila.children[indice];
+            return celda ? celda.textContent.trim() : '';
+        }
+
+        // Solo se considera numérica si, quitando $/%/espacios, el valor entero es un número
+        // (así una fecha "2026-09-15" no se confunde con un número negativo por el guion).
+        const patronNumero = /^-?\d+([.,]\d+)?$/;
+        function limpiarNumero(v) {
+            return v.replace(/[$%\s]/g, '');
+        }
+
+        const esNumerico = filas.length > 0 && filas.every(function (fila) {
+            const v = limpiarNumero(valorCelda(fila));
+            return v === '' || v === '-' || patronNumero.test(v);
+        });
+
+        filas.sort(function (a, b) {
+            let va = valorCelda(a), vb = valorCelda(b);
+            if (esNumerico) {
+                va = parseFloat(limpiarNumero(va).replace(',', '.')) || 0;
+                vb = parseFloat(limpiarNumero(vb).replace(',', '.')) || 0;
+                return direccion === 'asc' ? va - vb : vb - va;
+            }
+            return direccion === 'asc'
+                ? va.localeCompare(vb, 'es', { sensitivity: 'base' })
+                : vb.localeCompare(va, 'es', { sensitivity: 'base' });
+        });
+
+        filas.forEach(function (fila) { tbody.appendChild(fila); });
+    });
+</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>
