@@ -278,22 +278,29 @@ def imprimir(id):
     return render_template('recetas/pdf.html', receta=receta, auto_print=True)
 
 
+def _generar_pdf_bytes(receta):
+    """Genera el PDF de la receta en memoria. Devuelve None si xhtml2pdf no está disponible o falla."""
+    if not PDF_SUPPORT:
+        return None
+    html = render_template('recetas/pdf.html', receta=receta, auto_print=False)
+    buffer = io.BytesIO()
+    pisa_status = pisa.CreatePDF(io.StringIO(html), dest=buffer)
+    return buffer.getvalue() if not pisa_status.err else None
+
+
 @bp.route('/<int:id>/pdf')
 @login_required
 def descargar_pdf(id):
     receta = Receta.query.get_or_404(id)
-    html = render_template('recetas/pdf.html', receta=receta, auto_print=False)
+    pdf_bytes = _generar_pdf_bytes(receta)
 
-    if PDF_SUPPORT:
-        buffer = io.BytesIO()
-        pisa_status = pisa.CreatePDF(io.StringIO(html), dest=buffer)
-        if not pisa_status.err:
-            response = make_response(buffer.getvalue())
-            response.headers['Content-Type'] = 'application/pdf'
-            response.headers['Content-Disposition'] = f'inline; filename=Receta_{receta.numero_receta}.pdf'
-            return response
+    if pdf_bytes:
+        response = make_response(pdf_bytes)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename=Receta_{receta.numero_receta}.pdf'
+        return response
 
-    return html
+    return render_template('recetas/pdf.html', receta=receta, auto_print=False)
 
 
 @bp.route('/publico/<token>')
@@ -303,18 +310,15 @@ def ver_publico(token):
     if not receta:
         abort(404)
 
-    html = render_template('recetas/pdf.html', receta=receta, auto_print=False)
+    pdf_bytes = _generar_pdf_bytes(receta)
 
-    if PDF_SUPPORT:
-        buffer = io.BytesIO()
-        pisa_status = pisa.CreatePDF(io.StringIO(html), dest=buffer)
-        if not pisa_status.err:
-            response = make_response(buffer.getvalue())
-            response.headers['Content-Type'] = 'application/pdf'
-            response.headers['Content-Disposition'] = f'inline; filename=Receta_{receta.numero_receta}.pdf'
-            return response
+    if pdf_bytes:
+        response = make_response(pdf_bytes)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename=Receta_{receta.numero_receta}.pdf'
+        return response
 
-    return html
+    return render_template('recetas/pdf.html', receta=receta, auto_print=False)
 
 
 @bp.route('/<int:id>/enviar_email')
@@ -334,6 +338,13 @@ def enviar_email(id):
             html=html_content,
             charset='utf-8',
         )
+        pdf_bytes = _generar_pdf_bytes(receta)
+        if pdf_bytes:
+            msg.attach(
+                filename=f'Receta_{receta.numero_receta}.pdf',
+                content_type='application/pdf',
+                data=pdf_bytes,
+            )
         mail.send(msg)
         flash(f'Receta enviada exitosamente a {receta.cliente.email}.', 'success')
     except Exception as e:

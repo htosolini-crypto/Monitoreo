@@ -29,7 +29,7 @@
     </div>
     <div class="content">
         <p>Estimado/a <strong>{{ receta.cliente.razon_social }}</strong>,</p>
-        <p>Le adjuntamos los detalles correspondientes a la orden de aplicación generada:</p>
+        <p>Le adjuntamos en formato PDF la receta de aplicación generada. A continuación, un resumen de los datos:</p>
 
         <table class="info-grid">
             <tr><td class="info-label">Fecha:</td><td>{{ receta.fecha.strftime('%Y-%m-%d') }}</td></tr>
@@ -63,7 +63,6 @@
 
         <div class="firma-box">
             <strong>{{ receta.profesional.nombre_para_mostrar }}</strong><br>
-            {% if receta.profesional.matricula %}Matrícula N° {{ receta.profesional.matricula }}<br>{% endif %}
             {% if receta.profesional.telefono %}Tel: {{ receta.profesional.telefono }}<br>{% endif %}
             {% if receta.profesional.email %}{{ receta.profesional.email }}{% endif %}
         </div>
