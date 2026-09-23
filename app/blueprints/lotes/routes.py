@@ -1,3 +1,4 @@
+import base64
 import json
 
 from flask import render_template, redirect, url_for, flash, request, current_app
@@ -101,8 +102,13 @@ def identificar(id):
     lote = Lote.query.get_or_404(id)
     form = IdentificarPlantaForm()
     resultado = None
+    imagen_preview = None
 
     if form.validate_on_submit():
+        imagen_bytes = form.imagen.data.stream.read()
+        form.imagen.data.stream.seek(0)
+        imagen_preview = f'data:{form.imagen.data.mimetype};base64,{base64.b64encode(imagen_bytes).decode("ascii")}'
+
         try:
             resultado = identificar_planta(form.imagen.data, form.organo.data)
             if not resultado['resultados']:
@@ -110,7 +116,9 @@ def identificar(id):
         except IdentificacionError as exc:
             flash(str(exc), 'danger')
 
-    return render_template('lotes/identificar.html', form=form, lote=lote, resultado=resultado)
+    return render_template(
+        'lotes/identificar.html', form=form, lote=lote, resultado=resultado, imagen_preview=imagen_preview
+    )
 
 
 @bp.route('/<int:id>/ndvi', methods=['GET', 'POST'])

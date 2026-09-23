@@ -14,6 +14,9 @@
                 <form method="POST" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
                     {{ render_field(form.imagen, 'col-12') }}
+                    <div id="previewSeleccionContainer" class="col-12 mb-3" style="display: none;">
+                        <img id="previewSeleccion" src="" alt="Vista previa" class="img-fluid rounded border">
+                    </div>
                     {{ render_field(form.organo, 'col-12') }}
                     <button type="submit" class="btn btn-success px-4"><i class="fa-solid fa-magnifying-glass me-1"></i> Identificar</button>
                 </form>
@@ -34,6 +37,11 @@
                 <span class="text-muted small">Identificaciones restantes hoy: {{ resultado.restantes_hoy }}</span>
                 {% endif %}
             </div>
+            {% if imagen_preview %}
+            <div class="text-center p-3 border-bottom bg-light">
+                <img src="{{ imagen_preview }}" alt="Foto analizada" class="img-fluid rounded" style="max-height: 300px;">
+            </div>
+            {% endif %}
             <ul class="list-group list-group-flush">
                 {% for r in resultado.resultados %}
                 <li class="list-group-item">
@@ -55,11 +63,40 @@
         </div>
         {% else %}
         <div class="card shadow-sm border-0 h-100">
+            {% if imagen_preview %}
+            <div class="text-center p-3 border-bottom bg-light">
+                <img src="{{ imagen_preview }}" alt="Foto analizada" class="img-fluid rounded" style="max-height: 300px;">
+            </div>
+            {% endif %}
             <div class="card-body d-flex align-items-center justify-content-center text-muted">
-                <p class="mb-0 text-center">Subí una foto para ver los resultados de identificación acá.</p>
+                <p class="mb-0 text-center">
+                    {% if imagen_preview %}No se pudo identificar ninguna especie en esta imagen.
+                    {% else %}Subí una foto para ver los resultados de identificación acá.{% endif %}
+                </p>
             </div>
         </div>
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('{{ form.imagen.id }}').addEventListener('change', function (e) {
+        const archivo = e.target.files[0];
+        const contenedor = document.getElementById('previewSeleccionContainer');
+        const img = document.getElementById('previewSeleccion');
+        if (!archivo) {
+            contenedor.style.display = 'none';
+            img.src = '';
+            return;
+        }
+        const lector = new FileReader();
+        lector.onload = function (ev) {
+            img.src = ev.target.result;
+            contenedor.style.display = 'block';
+        };
+        lector.readAsDataURL(archivo);
+    });
+</script>
 {% endblock %}
