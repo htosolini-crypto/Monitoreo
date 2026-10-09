@@ -6,14 +6,33 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
-class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-cambiar-en-produccion')
+def _database_url():
+    url = os.environ.get('DATABASE_URL')
+    if not url:
+        return 'sqlite:///' + os.path.join(BASE_DIR, 'instance', 'cultivos.db')
+    # Algunos proveedores entregan "postgres://", esquema que SQLAlchemy 2 ya no acepta.
+    if url.startswith('postgres://'):
+        url = 'postgresql://' + url[len('postgres://'):]
+    return url
 
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URL',
-        'sqlite:///' + os.path.join(BASE_DIR, 'instance', 'cultivos.db')
-    )
+
+def _bool(nombre, default='false'):
+    return os.environ.get(nombre, default).strip().lower() in ('1', 'true', 'yes', 'si')
+
+
+class Config:
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+
+    SQLALCHEMY_DATABASE_URI = _database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # En producción (HTTPS) definir SESSION_COOKIE_SECURE=true para que las cookies solo viajen cifradas.
+    SESSION_COOKIE_SECURE = _bool('SESSION_COOKIE_SECURE')
+    REMEMBER_COOKIE_SECURE = _bool('SESSION_COOKIE_SECURE')
+    SESSION_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    REMEMBER_COOKIE_SAMESITE = 'Lax'
 
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))

@@ -2,7 +2,7 @@ import io
 from datetime import datetime
 from urllib.parse import quote
 
-from flask import render_template, redirect, url_for, flash, request, send_file, make_response, abort
+from flask import render_template, redirect, url_for, flash, request, send_file, make_response, abort, current_app
 from flask_login import login_required, current_user
 import pandas as pd
 
@@ -12,13 +12,13 @@ try:
 except ImportError:
     PDF_SUPPORT = False
 
-from app.extensions import db, mail
+from app.extensions import db
 from app.blueprints.recetas import bp
 from app.blueprints.recetas.forms import RecetaForm
 from app.blueprints.recetas.services import obtener_recetas_filtradas
 from app.decorators import tiene_permiso_modulo
 from app.models import Receta, RecetaDetalle, Cliente, Lote, Campania, Producto, PrincipioActivo, Parametro
-from app.utils import formatear_telefono_whatsapp
+from app.utils import formatear_telefono_whatsapp, enviar_correo
 from flask_mail import Message
 
 
@@ -345,8 +345,15 @@ def enviar_email(id):
                 content_type='application/pdf',
                 data=pdf_bytes,
             )
-        mail.send(msg)
+        enviar_correo(msg)
         flash(f'Receta enviada exitosamente a {receta.cliente.email}.', 'success')
+    except OSError as e:
+        current_app.logger.warning('Falló el envío de la receta %s por email: %s', receta.numero_receta, e)
+        flash(
+            'No se pudo enviar el correo: el servidor de correo no está disponible o no está configurado. '
+            'Probá más tarde o compartí la receta por WhatsApp.',
+            'danger',
+        )
     except Exception as e:
         flash(f'Error al enviar el correo electrónico: {str(e)}', 'danger')
 

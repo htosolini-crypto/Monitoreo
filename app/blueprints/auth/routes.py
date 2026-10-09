@@ -1,11 +1,12 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 
 from app.blueprints.auth import bp
 from app.blueprints.auth.forms import LoginForm, SolicitarRecuperacionForm, RestablecerPasswordForm
-from app.extensions import db, mail
+from app.extensions import db
 from app.models import Usuario
+from app.utils import enviar_correo
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -49,9 +50,9 @@ def recuperar():
                     recipients=[usuario.email],
                     html=html_content,
                 )
-                mail.send(msg)
+                enviar_correo(msg)
             except Exception:
-                pass
+                current_app.logger.warning('No se pudo enviar el email de recuperación', exc_info=True)
 
         flash(
             'Si el email ingresado está registrado, vas a recibir instrucciones para recuperar tu acceso.',

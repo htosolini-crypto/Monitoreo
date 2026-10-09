@@ -1,0 +1,6 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "deploy": {
+    "startCommand": "flask --app wsgi db upgrade && flask --app wsgi seed-admin && flask --app wsgi seed-parametros && gunicorn wsgi:app --bind 0.0.0.0:${PORT:-8000} --threads 4 --timeout 120 --access-logfile -"
+  }
+}

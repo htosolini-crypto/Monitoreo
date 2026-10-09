@@ -1,6 +1,26 @@
 import re
+import socket
 import time
 from functools import wraps
+
+from flask import current_app
+
+from app.extensions import mail
+
+
+def enviar_correo(msg, timeout=15):
+    """Envía un mensaje con un timeout de red acotado: si el servidor SMTP no responde (por ejemplo,
+    el hosting bloquea el puerto), falla en segundos en vez de dejar colgado el proceso.
+    Sin MAIL_USERNAME configurado falla de inmediato (OSError)."""
+    if not current_app.config.get('MAIL_USERNAME'):
+        raise OSError('El envío de correo no está configurado en este servidor.')
+
+    anterior = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(timeout)
+    try:
+        mail.send(msg)
+    finally:
+        socket.setdefaulttimeout(anterior)
 
 
 def cache_temporal(ttl_segundos):

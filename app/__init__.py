@@ -1,7 +1,9 @@
 import os
+import secrets
 
 import click
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.config import Config
 from app.extensions import db, migrate, mail, login_manager, csrf
@@ -10,6 +12,16 @@ from app.extensions import db, migrate, mail, login_manager, csrf
 def create_app(config_class=Config):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_class)
+
+    if not app.config.get('SECRET_KEY'):
+        raise RuntimeError(
+            'Falta la variable de entorno SECRET_KEY. Definila en el archivo .env (local) '
+            'o en las variables del servicio (producción).'
+        )
+
+    # Detrás del proxy de Railway: respeta X-Forwarded-Proto/Host para que url_for(_external=True)
+    # genere links https con el dominio público. Sin esos headers (desarrollo local) no tiene efecto.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     os.makedirs(app.instance_path, exist_ok=True)
 
@@ -70,13 +82,25 @@ def create_app(config_class=Config):
 
     @app.cli.command('seed-admin')
     def seed_admin():
-        """Crea el usuario admin inicial si no existe ningún usuario."""
+        """Crea el usuario admin inicial si no existe ningún usuario.
+
+        Usa ADMIN_USER / ADMIN_PASSWORD / ADMIN_EMAIL si están definidas; sin contraseña,
+        genera una aleatoria y la muestra una sola vez."""
         if Usuario.query.first():
             click.echo('Ya existe al menos un usuario. No se creó ninguno nuevo.')
             return
 
+        usuario = os.environ.get('ADMIN_USER', 'admin')
+        password = os.environ.get('ADMIN_PASSWORD')
+        generada = not password
+        if generada:
+            password = secrets.token_urlsafe(12)
+        elif len(password) < 8:
+            raise click.ClickException('ADMIN_PASSWORD debe tener al menos 8 caracteres.')
+
         admin = Usuario(
-            usuario='admin',
+            usuario=usuario,
+            email=os.environ.get('ADMIN_EMAIL') or None,
             is_admin=True,
             activo=True,
             puede_clientes=True,
@@ -84,41 +108,63 @@ def create_app(config_class=Config):
             puede_productos=True,
             puede_recetas=True,
         )
-        admin.set_password('admin123')
+        admin.set_password(password)
         db.session.add(admin)
         db.session.commit()
-        click.echo('Usuario admin creado (usuario: admin / password: admin123). Cambiá la contraseña luego de ingresar.')
+
+        if generada:
+            click.echo(
+                f'Usuario administrador creado: {usuario} / contraseña generada: {password} '
+                '(anotala ahora y cambiala al ingresar; no se vuelve a mostrar).'
+            )
+        else:
+            click.echo(f'Usuario administrador creado: {usuario}.')
 
     @app.cli.command('seed-parametros')
     def seed_parametros():
-        """Carga los ítems de los combos fijos (Condición IVA, Unidad) si la tabla está vacía."""
+        """Carga los ítems iniciales de los combos (Condición IVA, Unidad, Tipo de Insumo) si la tabla está vacía."""
         from app.models import Parametro
 
         if Parametro.query.first():
             click.echo('Ya existen parámetros cargados. No se agregó ninguno nuevo.')
             return
 
-        condiciones_iva = [
-            'IVA Responsable Inscripto',
-            'IVA Sujeto Exento',
-            'Consumidor Final',
-            'Responsable Monotributo',
-            'Sujeto No Categorizado',
-            'Proveedor del Exterior',
-            'Cliente del Exterior',
-            'IVA Liberado - Ley Nro. 19.640',
-            'Monotributista Social',
-            'IVA No Alcanzado',
-            'Monotributista Independiente',
-        ]
-        unidades = ['Gramos', 'Kilos', 'Litros']
+        iniciales = {
+            'condicion_iva': [
+                ('IVA Responsable Inscripto', None),
+                ('IVA Sujeto Exento', None),
+                ('Consumidor Final', None),
+                ('Responsable Monotributo', None),
+                ('Sujeto No Categorizado', None),
+                ('Proveedor del Exterior', None),
+                ('Cliente del Exterior', None),
+                ('IVA Liberado - Ley Nro. 19.640', None),
+                ('Monotributista Social', None),
+                ('IVA No Alcanzado', None),
+                ('Monotributista Independiente', None),
+            ],
+            'unidad_producto': [
+                ('Gramos', 'Grs.'),
+                ('Kilogramos', 'Kgs.'),
+                ('Litros', 'Lts.'),
+                ('Centimetros 3', 'Cm3'),
+            ],
+            'tipo_insumo': [
+                ('Herbicida', None),
+                ('Insecticida', None),
+                ('Fungicida', None),
+                ('Coadyuvante', None),
+                ('Fertilizante', None),
+            ],
+        }
 
-        for orden, valor in enumerate(condiciones_iva):
-            db.session.add(Parametro(categoria='condicion_iva', valor=valor, orden=orden))
-        for orden, valor in enumerate(unidades):
-            db.session.add(Parametro(categoria='unidad_producto', valor=valor, orden=orden))
+        total = 0
+        for categoria, items in iniciales.items():
+            for orden, (valor, abreviatura) in enumerate(items):
+                db.session.add(Parametro(categoria=categoria, valor=valor, abreviatura=abreviatura, orden=orden))
+                total += 1
 
         db.session.commit()
-        click.echo(f'Se cargaron {len(condiciones_iva)} condiciones de IVA y {len(unidades)} unidades.')
+        click.echo(f'Se cargaron {total} parámetros iniciales en {len(iniciales)} categorías.')
 
     return app
