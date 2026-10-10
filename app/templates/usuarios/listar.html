@@ -38,6 +38,7 @@
                 </td>
                 <td>
                     {% if u.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">Inactivo</span>{% endif %}
+                    {% if u.debe_cambiar_password %}<span class="badge bg-warning text-dark" title="Debe cambiar la contraseña al ingresar">Clave provisoria</span>{% endif %}
                 </td>
                 <td>
                     {% if u.is_admin %}

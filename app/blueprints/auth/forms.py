@@ -15,6 +15,16 @@ class SolicitarRecuperacionForm(FlaskForm):
     submit = SubmitField('Enviar instrucciones')
 
 
+class CambiarPasswordForm(FlaskForm):
+    password_actual = PasswordField('Contraseña actual', validators=[DataRequired()])
+    password = PasswordField('Nueva contraseña', validators=[DataRequired(), Length(min=6)])
+    confirmar_password = PasswordField(
+        'Confirmar contraseña',
+        validators=[DataRequired(), EqualTo('password', message='Las contraseñas no coinciden.')],
+    )
+    submit = SubmitField('Cambiar contraseña')
+
+
 class RestablecerPasswordForm(FlaskForm):
     password = PasswordField('Nueva contraseña', validators=[DataRequired(), Length(min=6)])
     confirmar_password = PasswordField(

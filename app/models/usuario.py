@@ -23,6 +23,8 @@ class Usuario(UserMixin, db.Model):
     telefono = db.Column(db.String(50))
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
     activo = db.Column(db.Boolean, nullable=False, default=True)
+    # True mientras la contraseña la haya puesto otro (alta o blanqueo): obliga a cambiarla al ingresar
+    debe_cambiar_password = db.Column(db.Boolean, nullable=False, default=True, server_default=db.false())
     puede_clientes = db.Column(db.Boolean, nullable=False, default=False)
     puede_lotes = db.Column(db.Boolean, nullable=False, default=False)
     puede_productos = db.Column(db.Boolean, nullable=False, default=False)

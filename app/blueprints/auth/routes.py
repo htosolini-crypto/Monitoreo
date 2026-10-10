@@ -3,7 +3,9 @@ from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 
 from app.blueprints.auth import bp
-from app.blueprints.auth.forms import LoginForm, SolicitarRecuperacionForm, RestablecerPasswordForm
+from app.blueprints.auth.forms import (
+    LoginForm, SolicitarRecuperacionForm, RestablecerPasswordForm, CambiarPasswordForm,
+)
 from app.extensions import db
 from app.models import Usuario
 from app.utils import enviar_correo
@@ -31,6 +33,24 @@ def logout():
     logout_user()
     flash('Sesión cerrada correctamente.', 'info')
     return redirect(url_for('auth.login'))
+
+
+@bp.route('/cambiar-password', methods=['GET', 'POST'])
+@login_required
+def cambiar_password():
+    form = CambiarPasswordForm()
+    if form.validate_on_submit():
+        if not current_user.check_password(form.password_actual.data):
+            form.password_actual.errors.append('La contraseña actual no es correcta.')
+        elif form.password.data == form.password_actual.data:
+            form.password.errors.append('La nueva contraseña debe ser distinta de la actual.')
+        else:
+            current_user.set_password(form.password.data)
+            current_user.debe_cambiar_password = False
+            db.session.commit()
+            flash('Tu contraseña fue actualizada.', 'success')
+            return redirect(url_for('dashboard'))
+    return render_template('auth/cambiar_password.html', form=form)
 
 
 @bp.route('/recuperar', methods=['GET', 'POST'])
@@ -73,6 +93,7 @@ def restablecer(token):
     form = RestablecerPasswordForm()
     if form.validate_on_submit():
         usuario.set_password(form.password.data)
+        usuario.debe_cambiar_password = False
         db.session.commit()
         flash('Tu contraseña fue actualizada. Ya podés iniciar sesión.', 'success')
         return redirect(url_for('auth.login'))

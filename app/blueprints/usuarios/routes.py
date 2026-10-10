@@ -26,6 +26,8 @@ def _aplicar_datos(usuario, form, requerir_password):
 
     if form.password.data:
         usuario.set_password(form.password.data)
+        # Contraseña puesta por el administrador: el usuario debe elegir la suya al ingresar
+        usuario.debe_cambiar_password = usuario.id != current_user.id
     elif requerir_password:
         form.password.errors.append('La contraseña es obligatoria para un usuario nuevo.')
         return False

@@ -59,8 +59,16 @@ def create_app(config_class=Config):
     app.register_blueprint(estadisticas_bp)
     app.register_blueprint(parametros_bp)
 
-    from flask import render_template
+    from flask import redirect, render_template, request, url_for
     from flask_login import login_required, current_user
+
+    @app.before_request
+    def exigir_cambio_password():
+        """Con contraseña provisoria (alta o blanqueo hecho por un administrador) solo se puede
+        cambiarla o cerrar sesión."""
+        if (current_user.is_authenticated and current_user.debe_cambiar_password
+                and request.endpoint not in ('auth.cambiar_password', 'auth.logout', 'static')):
+            return redirect(url_for('auth.cambiar_password'))
 
     from app.services.clima import obtener_clima
     from app.services.cotizaciones import obtener_cotizaciones_dolar
@@ -103,6 +111,7 @@ def create_app(config_class=Config):
             email=os.environ.get('ADMIN_EMAIL') or None,
             is_admin=True,
             activo=True,
+            debe_cambiar_password=generada,
             puede_clientes=True,
             puede_lotes=True,
             puede_productos=True,

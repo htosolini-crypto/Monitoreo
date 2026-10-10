@@ -18,6 +18,7 @@
                 <div class="col-md-4 mb-3">
                     {{ form.password.label(class_='form-label fw-bold') }}
                     {{ form.password(class_='form-control' + (' is-invalid' if form.password.errors else ''), autocomplete='new-password', placeholder=('Dejar vacío para no cambiar' if usuario else '')) }}
+                    <div class="form-text">El usuario deberá cambiarla en su primer ingreso.</div>
                     {% for error in form.password.errors %}
                         <div class="invalid-feedback d-block">{{ error }}</div>
                     {% endfor %}
