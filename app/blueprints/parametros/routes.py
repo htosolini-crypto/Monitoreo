@@ -105,6 +105,10 @@ def eliminar(id):
     parametro = Parametro.query.get_or_404(id)
     categoria = parametro.categoria
     db.session.delete(parametro)
-    db.session.commit()
-    flash('Parámetro eliminado correctamente.', 'warning')
+    try:
+        db.session.commit()
+        flash('Parámetro eliminado correctamente.', 'warning')
+    except IntegrityError:
+        db.session.rollback()
+        flash('No se puede eliminar: está en uso. Desactivalo para que no se ofrezca más.', 'danger')
     return redirect(url_for('parametros.listar', categoria=categoria))

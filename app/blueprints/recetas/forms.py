@@ -8,4 +8,5 @@ class RecetaForm(FlaskForm):
     lote_id = SelectField('Lote', coerce=int, validators=[DataRequired()])
     campania_id = SelectField('Campaña', coerce=int, validators=[DataRequired()])
     hectareas = FloatField('Hectáreas', validators=[DataRequired(), NumberRange(min=0)])
+    tipo_aplicacion_id = SelectField('Tipo de aplicación', coerce=int, validators=[DataRequired()])
     observaciones = TextAreaField('Observaciones', validators=[Optional()])

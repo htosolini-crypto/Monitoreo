@@ -165,6 +165,11 @@ def create_app(config_class=Config):
                 ('Coadyuvante', None),
                 ('Fertilizante', None),
             ],
+            'tipo_aplicacion': [
+                ('Terrestre', None),
+                ('Dron', None),
+                ('Avión', None),
+            ],
         }
 
         total = 0

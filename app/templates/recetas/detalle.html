@@ -55,6 +55,7 @@
         <div class="col-sm-6"><strong>Lote:</strong> {{ receta.lote.nombre }}</div>
         <div class="col-sm-6"><strong>Superficie a aplicar:</strong> <span class="badge bg-primary fs-6 fw-normal">{{ "%.2f"|format(receta.hectareas) }} ha</span></div>
         <div class="col-sm-6"><strong>Campaña:</strong> {{ receta.campania.nombre }} ({{ receta.campania.cultivo }})</div>
+        <div class="col-sm-6"><strong>Tipo de aplicación:</strong> {{ receta.tipo_aplicacion.valor }}</div>
         {% if receta.observaciones %}
         <div class="col-12 mt-2 pt-2 border-top"><strong>Observaciones:</strong> {{ receta.observaciones }}</div>
         {% endif %}

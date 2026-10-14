@@ -20,8 +20,10 @@ class Receta(db.Model):
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
     hectareas = db.Column(db.Float, nullable=False, default=0.0)
     observaciones = db.Column(db.Text)
+    tipo_aplicacion_id = db.Column(db.Integer, db.ForeignKey('parametros.id'), nullable=False)
 
     campania = db.relationship('Campania')
+    tipo_aplicacion = db.relationship('Parametro')
     profesional = db.relationship('Usuario')
 
     detalles = db.relationship(

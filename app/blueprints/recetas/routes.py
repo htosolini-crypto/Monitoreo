@@ -50,6 +50,16 @@ def _cargar_choices(form, cliente_id=None, lote_id=None):
     else:
         form.campania_id.choices = []
 
+    # Solo los ítems activos; si la receta ya tiene uno dado de baja se mantiene para no perderlo.
+    tipos = Parametro.query.filter_by(categoria='tipo_aplicacion', activo=True).order_by(
+        Parametro.orden.asc(), Parametro.id.asc()).all()
+    actual = form.tipo_aplicacion_id.data
+    if actual and actual not in [t.id for t in tipos]:
+        inactivo = db.session.get(Parametro, actual)
+        if inactivo:
+            tipos.append(inactivo)
+    form.tipo_aplicacion_id.choices = [(t.id, t.valor) for t in tipos]
+
 
 def _unidades_abreviadas():
     return {
@@ -184,6 +194,7 @@ def nueva():
             cliente_id=form.cliente_id.data,
             lote_id=form.lote_id.data,
             campania_id=form.campania_id.data,
+            tipo_aplicacion_id=form.tipo_aplicacion_id.data,
             usuario_id=current_user.id,
             hectareas=form.hectareas.data,
             observaciones=form.observaciones.data,
@@ -232,6 +243,7 @@ def editar(id):
         receta.cliente_id = form.cliente_id.data
         receta.lote_id = form.lote_id.data
         receta.campania_id = form.campania_id.data
+        receta.tipo_aplicacion_id = form.tipo_aplicacion_id.data
         receta.hectareas = form.hectareas.data
         receta.observaciones = form.observaciones.data
 

@@ -20,7 +20,8 @@
             {{ render_field(form.lote_id, 'col-md-3') }}
             {{ render_field(form.campania_id, 'col-md-3') }}
             {{ render_field(form.hectareas, 'col-md-2') }}
-            <div class="col-12">
+            {{ render_field(form.tipo_aplicacion_id, 'col-md-3') }}
+            <div class="col-md-9">
                 {{ form.observaciones.label(class_='form-label fw-bold') }}
                 {{ form.observaciones(class_='form-control', rows=2) }}
             </div>
