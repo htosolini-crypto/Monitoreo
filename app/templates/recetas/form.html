@@ -68,7 +68,7 @@
             <select name="producto_id[]" class="form-select producto-select" required onchange="actualizarUnidad(this)">
                 <option value="">-- Seleccionar --</option>
                 {% for p in productos %}
-                    <option value="{{ p.id }}" data-unidad="{{ unidades_abrev.get(p.unidad, p.unidad) }}" data-precio="{{ p.precio }}" data-principio="{{ p.principio_activo.nombre }}">{{ p.denominacion_comercial }} ({{ p.marca }})</option>
+                    <option value="{{ p.id }}" data-unidad="{{ unidades_abrev.get(p.unidad, p.unidad) }}"{% if p.unidad in conversiones %} data-unidad-mayor="{{ conversiones[p.unidad].abrev }}" data-factor="{{ conversiones[p.unidad].factor }}"{% endif %} data-precio="{{ p.precio }}" data-principio="{{ p.principio_activo.nombre }}">{{ p.denominacion_comercial }} ({{ p.marca }})</option>
                 {% endfor %}
             </select>
         </td>
@@ -84,7 +84,7 @@
         <td>
             <div class="input-group">
                 <input type="text" class="form-control input-total bg-light" readonly value="0.00">
-                <span class="input-group-text unidad-label">-</span>
+                <span class="input-group-text unidad-total-label">-</span>
             </div>
         </td>
         <td>
@@ -155,7 +155,7 @@
         const unidad = option ? (option.getAttribute('data-unidad') || '-') : '-';
         const principio = option ? (option.getAttribute('data-principio') || '-') : '-';
         const tr = select.closest('tr');
-        tr.querySelectorAll('.unidad-label').forEach(el => el.textContent = unidad);
+        tr.querySelector('.unidad-label').textContent = unidad;
         tr.querySelector('.input-principio').value = principio;
         calcularFila(select);
     }
@@ -171,8 +171,20 @@
         const cantidadTotal = dosis * ha;
         const importe = cantidadTotal * precio;
 
-        tr.querySelector('.input-total').value = cantidadTotal.toFixed(2);
-        tr.querySelector('.input-precio').value = '$ ' + precio.toFixed(2);
+        // cm3 -> litros y grs. -> kilos cuando la cantidad total llega a 1000; el precio se
+        // muestra por la misma unidad para que cantidad x precio = importe
+        const factor = option ? (parseFloat(option.getAttribute('data-factor')) || 0) : 0;
+        let textoTotal = cantidadTotal;
+        let textoPrecio = precio;
+        let unidadTotal = option ? (option.getAttribute('data-unidad') || '-') : '-';
+        if (factor && Math.abs(cantidadTotal) >= factor) {
+            textoTotal = cantidadTotal / factor;
+            textoPrecio = precio * factor;
+            unidadTotal = option.getAttribute('data-unidad-mayor');
+        }
+        tr.querySelector('.input-total').value = textoTotal.toFixed(2);
+        tr.querySelector('.unidad-total-label').textContent = unidadTotal;
+        tr.querySelector('.input-precio').value = '$ ' + textoPrecio.toFixed(2);
         tr.querySelector('.input-importe').value = '$ ' + importe.toFixed(2);
 
         actualizarTotalGeneral();

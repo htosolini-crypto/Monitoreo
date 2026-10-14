@@ -50,8 +50,8 @@
                 <tr>
                     <td><strong>{{ d.producto.denominacion_comercial }}</strong> ({{ d.producto.marca }})</td>
                     <td>{{ d.producto.principio_activo }}</td>
-                    <td>{{ "%.2f"|format(d.dosis) }} {{ d.producto.unidad }}/ha</td>
-                    <td><strong>{{ "%.2f"|format(d.cantidad_total) }} {{ d.producto.unidad }}</strong></td>
+                    <td>{{ "%.2f"|format(d.dosis) }} {{ d.producto.unidad_abreviada }}/ha</td>
+                    <td><strong>{{ d.cantidad_total_texto }}</strong></td>
                 </tr>
                 {% endfor %}
             </tbody>

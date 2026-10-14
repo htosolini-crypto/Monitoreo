@@ -74,3 +74,17 @@ class RecetaDetalle(db.Model):
     importe_total = db.Column(db.Float, nullable=False, default=0.0)
 
     producto = db.relationship('Producto')
+
+    @property
+    def cantidad_total_texto(self):
+        """Cantidad total lista para mostrar, ej. '1.50 Lts.' (cm3 -> litros, grs. -> kilos desde 1000)."""
+        from app.services.unidades import cantidad_legible
+        cantidad, abreviatura = cantidad_legible(self.cantidad_total, self.producto.unidad)
+        return f'{cantidad:.2f} {abreviatura}'
+
+    @property
+    def precio_unitario_texto(self):
+        """Precio por la misma unidad en que se muestra la cantidad total (así cantidad x precio = importe)."""
+        from app.services.unidades import unidad_legible
+        _, factor = unidad_legible(self.cantidad_total, self.producto.unidad)
+        return f'$ {self.precio_unitario * factor:.2f}'

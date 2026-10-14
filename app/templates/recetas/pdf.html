@@ -54,9 +54,9 @@
 <table>
     <thead>
         <tr>
-            <th>Producto</th>
+            <th>Tipo de Insumo</th>
             <th>Principio Activo</th>
-            <th>Marca</th>
+            <th>Denominación Comercial</th>
             <th class="text-right">Dosis / Ha</th>
             <th class="text-right">Total</th>
         </tr>
@@ -64,11 +64,11 @@
     <tbody>
         {% for d in receta.detalles %}
         <tr>
-            <td>{{ d.producto.denominacion_comercial }}</td>
+            <td>{{ d.producto.id_insumo or '-' }}</td>
             <td>{{ d.producto.principio_activo }}</td>
-            <td>{{ d.producto.marca }}</td>
-            <td class="text-right">{{ "%.2f"|format(d.dosis) }} {{ d.producto.unidad }}</td>
-            <td class="text-right"><strong>{{ "%.2f"|format(d.cantidad_total) }} {{ d.producto.unidad }}</strong></td>
+            <td>{{ d.producto.denominacion_comercial }}</td>
+            <td class="text-right">{{ "%.2f"|format(d.dosis) }} {{ d.producto.unidad_abreviada }}</td>
+            <td class="text-right"><strong>{{ d.cantidad_total_texto }}</strong></td>
         </tr>
         {% endfor %}
     </tbody>

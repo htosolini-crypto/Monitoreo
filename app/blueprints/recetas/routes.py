@@ -19,6 +19,7 @@ from app.blueprints.recetas.services import obtener_recetas_filtradas
 from app.decorators import tiene_permiso_modulo
 from app.models import Receta, RecetaDetalle, Cliente, Lote, Campania, Producto, PrincipioActivo, Parametro
 from app.utils import formatear_telefono_whatsapp, enviar_correo
+from app.services.unidades import conversiones_para_formulario
 from flask_mail import Message
 
 
@@ -114,7 +115,7 @@ def exportar_excel():
                     'Principio Activo': d.producto.principio_activo.nombre,
                     'Marca': d.producto.marca,
                     'Dosis': d.dosis,
-                    'Unidad': d.producto.unidad,
+                    'Unidad': d.producto.unidad_abreviada,
                     'Cantidad Total': d.cantidad_total,
                     'Precio Unitario': d.precio_unitario,
                     'Importe Total': d.importe_total,
@@ -174,6 +175,7 @@ def nueva():
                 titulo='Nueva Receta',
                 productos=Producto.query.order_by(Producto.denominacion_comercial.asc()).all(),
                 unidades_abrev=_unidades_abreviadas(),
+                conversiones=conversiones_para_formulario(),
                 lotes_superficie=_superficie_por_lote(),
             )
 
@@ -205,6 +207,7 @@ def nueva():
         productos=productos,
         proximo_numero=proximo_numero,
         unidades_abrev=_unidades_abreviadas(),
+        conversiones=conversiones_para_formulario(),
         lotes_superficie=_superficie_por_lote(),
     )
 
@@ -249,6 +252,7 @@ def editar(id):
         receta=receta,
         productos=productos,
         unidades_abrev=_unidades_abreviadas(),
+        conversiones=conversiones_para_formulario(),
         lotes_superficie=_superficie_por_lote(),
     )
 

@@ -1,4 +1,5 @@
 from app.extensions import db
+from app.models.parametro import Parametro
 
 
 class Producto(db.Model):
@@ -14,3 +15,9 @@ class Producto(db.Model):
     id_insumo = db.Column(db.String(100), nullable=True)
 
     principio_activo = db.relationship('PrincipioActivo', back_populates='productos')
+
+    @property
+    def unidad_abreviada(self):
+        """Abreviatura de la unidad según Parámetros (unidad_producto); si no tiene, la unidad tal cual."""
+        parametro = Parametro.query.filter_by(categoria='unidad_producto', valor=self.unidad).first()
+        return (parametro.abreviatura if parametro and parametro.abreviatura else self.unidad)

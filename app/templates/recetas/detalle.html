@@ -81,9 +81,9 @@
                 <td class="fw-bold">{{ d.producto.denominacion_comercial }}</td>
                 <td>{{ d.producto.principio_activo }}</td>
                 <td>{{ d.producto.marca }}</td>
-                <td class="text-end">{{ "%.2f"|format(d.dosis) }} {{ d.producto.unidad }}/ha</td>
-                <td class="text-end table-success fw-bold text-success">{{ "%.2f"|format(d.cantidad_total) }} {{ d.producto.unidad }}</td>
-                <td class="text-end">$ {{ "%.2f"|format(d.precio_unitario) }}</td>
+                <td class="text-end">{{ "%.2f"|format(d.dosis) }} {{ d.producto.unidad_abreviada }}/ha</td>
+                <td class="text-end table-success fw-bold text-success">{{ d.cantidad_total_texto }}</td>
+                <td class="text-end">{{ d.precio_unitario_texto }}</td>
                 <td class="text-end fw-bold">$ {{ "%.2f"|format(d.importe_total) }}</td>
             </tr>
             {% else %}
